@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<launch>
+  <!--<include file="$(find gazebo_ros)/launch/willowgarage_world.launch">
+  </include>-->
+  <include file="$(find turtlebot_bringup)/launch/minimal.launch"/>
+  <include file="$(find freenect_launch)/launch/freenect.launch"/>
+  <!--Load the rosbridge server to receive the commands from the web browser-->
+  <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch" > 
+    <arg name="port" value="9090"/>
+  </include>
+  <!--Load the video server to receive the streaming from the robot-->
+  <node name="web_video_server" pkg="web_video_server" type="web_video_server" args="-port 8080"/>
+  <!-- Load the URDF into the ROS Parameter Server -->
+  <param name="robot_description"
+         command="$(find xacro)/xacro.py '$(find turtlebot_description)/robots/kobuki_hexagons_kinect.urdf.xacro'" />
+  <!--<node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" />-->
+
+  <!-- Run a python script to the send a service call to gazebo_ros to spawn a URDF robot -->
+   <!--<node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
+        args="-urdf -model mobile_base -param robot_description -z 1"/>-->
+
+</launch>

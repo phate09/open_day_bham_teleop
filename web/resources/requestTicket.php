@@ -6,7 +6,7 @@ $mysqli = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_DATABASE);
 $name = "test";
 //insert the new record
 $query = "INSERT into ticket (name) VALUES ('$name')";
-//$result = $mysqli->query($query);
+$result = $mysqli->query($query);
 //fetch the last inserted record
 $query = "SELECT id FROM ticket ORDER BY id DESC LIMIT 1";
 $result = $mysqli->query($query);

@@ -32,23 +32,27 @@ function init() {
     } else {
         $("#nav").empty();
     }
+    initClock();
+    loop();
+}
+
+function loop() {
+    "use strict"
+    checkQueue();
+    setTimeout(loop, 1000);
+}
+var clock;
+function initClock() {
     if ($(".countdown-clock").length) {//if clock exists
         clock = $('.countdown-clock').FlipClock({
-            autoStart: false,
+            autoStart: true,
             countdown: true,
             clockFace: "MinuteCounter"
         });
-        clock.setTime(600);
+        clock.setTime(60);
         clock.start();
         $("#clockContainer").innerHTML = "<h1 class=\"ui center aligned header\"> <div class=\"sub header\">Time to the next person</div> </h1>";
-    } else {
-        $("#clockContainer").empty();
     }
-    loop();
-}
-function loop() {
-    "use strict"
-    Window.setTimeout(loop, 1000);
 }
 function createXmlHttpRequestObject() {
     "use strict";
@@ -74,8 +78,7 @@ function checkQueue() {
     "use strict";
     //proceed only if the checkQueueHttpRequest object isn't busy
     if (checkQueueHttpRequest.readyState === 4 || checkQueueHttpRequest.readyState === 0) {
-        var ticketId = encodeURIComponent("nome"); //TODO: put the ticket id here
-        checkQueueHttpRequest.open("GET", "ticketer.php?ticket=" + ticketId, true);
+        checkQueueHttpRequest.open("GET", "resources/checkQueue.php", true);
         checkQueueHttpRequest.onreadystatechange = checkQueueResponse;
         checkQueueHttpRequest.send(null);
     } else {
@@ -88,23 +91,27 @@ function checkQueueResponse() {
     if (checkQueueHttpRequest.readyState === 4) {
         //status of 200 indicates the transaction completed succesfully
         if (checkQueueHttpRequest.status === 200) {
-            var responseJSON, html, i;
+            var responseJSON, html, i, serving, queueSize;
             html = "";
             //extract the xml
             responseJSON = JSON.parse(checkQueueHttpRequest.responseText);
-            for (i = 0; i < responseJSON.books.length; i = i + 1) {
-                html += responseJSON.books[i].title + ", " + responseJSON.books[i].isbn + "<br/>";
+
+            //update serving, clock and queue size
+            serving = "Serving id " + responseJSON.servingId;
+            if (responseJSON.remainingSeconds>0&& clock.time != responseJSON.remainingSeconds) {
+                clock.setTime(responseJSON.remainingSeconds);
+                clock.start();
             }
-            // display the data received from the server
-            document.getElementById("divMessage").innerHTML = html;
-            // restart sequence every second
-            setTimeout(checkQueue, 1000);
+            queueSize = responseJSON.queueSize + " " + (responseJSON.queueSize == 1 ? "person" : "people") + " in queue";
+            $("#queueSize").innerHTML = queueSize;
         }
     }
 }
 
 function requestTicket() {
     "use strict";
+    //hide the ticket button
+    $("#getTicket").hide();
     //proceed only if the checkQueueHttpRequest object isn't busy
     if (requestTicketHttpRequest.readyState === 4 || requestTicketHttpRequest.readyState === 0) {
         requestTicketHttpRequest.open("GET", "resources/requestTicket.php", true);
@@ -122,23 +129,26 @@ function requestTicketResponse() {
         if (requestTicketHttpRequest.status === 200) {
             var responseJSON;
             responseJSON = JSON.parse(requestTicketHttpRequest.responseText);
-            currentTicketId = responseJSON.ticketId;
-            alert(currentTicketId);
+            currentTicketId = parseInt(responseJSON.ticketId);
+            $("#yourNumber").text( "You are the number " + currentTicketId);
         } else {
             alert("There was a problem accessing the server: " + requestTicketHttpRequest.statusText);
         }
     }
 }
+//keeps the current ticket active (in order to remove the user from the queue if it leaves the page)
 function renewTicket() {
     "use strict";
-    //proceed only if the checkQueueHttpRequest object isn't busy
-    if (renewTicketHttpRequest.readyState === 4 || renewTicketHttpRequest.readyState === 0) {
-        renewTicketHttpRequest.open("GET", "resources/renewTicket.php?id=" + currentTicketId, true);
-        renewTicketHttpRequest.onreadystatechange = renewTicketResponse;
-        renewTicketHttpRequest.send(null);
-    } else {
-        // if the connection is busy, try again after one second
-        setTimeout(renewTicket, 1000);
+    if (currentTicketId != -1) {
+        //proceed only if the checkQueueHttpRequest object isn't busy
+        if (renewTicketHttpRequest.readyState === 4 || renewTicketHttpRequest.readyState === 0) {
+            renewTicketHttpRequest.open("GET", "resources/renewTicket.php?id=" + currentTicketId, true);
+            renewTicketHttpRequest.onreadystatechange = renewTicketResponse;
+            renewTicketHttpRequest.send(null);
+        } else {
+            // if the connection is busy, try again after one second
+            setTimeout(renewTicket, 1000);
+        }
     }
 }
 function renewTicketResponse() {

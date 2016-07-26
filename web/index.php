@@ -18,24 +18,7 @@
     <script src="resources/flipclock.min.js"></script>
     <script type="text/javascript" src="resources/main.js"></script>
 </head>
-<?php
-include_once("resources/config.php");
-$conn = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_DATABASE);
-if (!$conn) {
-    die('could not connnect:' . mysqli_connect_error());
-}
-?>
 <body onload="init()" style="background-color: rgb(238,238,238)">
-<?php
-//$sql = "select * from ticket";
-//$response = mysqli_query($conn, $sql);
-//if ($response) {
-//    while ($row = mysqli_fetch_array($response)) {
-//        echo "<p>" . $row["id"] . $row["name"] . "</p>";
-//    }
-//}
-//
-$conn->close()?>
 <div id="__blaze-root">
     <div class="ui main container">
         <h1 class="ui center aligned header">
@@ -66,7 +49,9 @@ $conn->close()?>
             <?php } ?>
         </div>
         <div class="ui one column center aligned grid">
-            <button class="ui primary button" onclick="requestTicket()">Get a ticket</button>
+            <div id="yourNumber"></div>
+            <button id="getTicket" class="ui primary button" onclick="requestTicket()">Get a ticket</button>
+            <div id="queueSize">0 people in queue</div>
         </div>
 
 

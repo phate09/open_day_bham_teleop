@@ -6,32 +6,11 @@
  * Setup all GUI elements when the page is loaded.
  */
 var src = "http://86.31.216.84:8080/stream?topic=/head_xtion/rgb/image_mono";
+
 function init() {
     "use strict";
-    var ros, viewer, clock;
-    if ($("#nav").length) {//if nav exists
-        // Connect to ROS.
-        ros = new ROSLIB.Ros({
-            url: 'ws://86.31.216.84:9090'
-        });
 
-        // Create the main viewer.
-        viewer = new ROS2D.Viewer({
-            divID: 'nav',
-            width: 271,//640,
-            height: 480//1131
-        });
-        // Setup the nav client.
-        NAV2D.OccupancyGridClientNav({
-            ros: ros,
-            rootObject: viewer.scene,
-            viewer: viewer,
-            serverName: '/move_base',
-            withOrientation: true
-        });
-    } else {
-        $("#nav").empty();
-    }
+    initNavigator();
     initClock();
     loop();
 }
@@ -39,6 +18,7 @@ function init() {
 function loop() {
     "use strict"
     checkQueue();
+    renewTicket();
     setTimeout(loop, 1000);
 }
 var clock;
@@ -49,9 +29,41 @@ function initClock() {
             countdown: true,
             clockFace: "MinuteCounter"
         });
-        clock.setTime(60);
+        clock.setTime(0);
         clock.start();
         $("#clockContainer").innerHTML = "<h1 class=\"ui center aligned header\"> <div class=\"sub header\">Time to the next person</div> </h1>";
+    }
+}
+var ros;
+function initNavigator(flag) {
+    var viewer;
+    if ($("#nav").length) {//if nav exists
+        if (flag) {
+            if (ros == null) {
+                // Connect to ROS.
+                ros = new ROSLIB.Ros({
+                    url: 'ws://86.31.216.84:9090'
+                });
+
+                // Create the main viewer.
+                viewer = new ROS2D.Viewer({
+                    divID: 'nav',
+                    width: 271,//640,
+                    height: 480//1131
+                });
+                // Setup the nav client.
+                NAV2D.OccupancyGridClientNav({
+                    ros: ros,
+                    rootObject: viewer.scene,
+                    viewer: viewer,
+                    serverName: '/move_base',
+                    withOrientation: true
+                });
+            }
+        } else {
+            $("#nav").empty();
+            ros=null;
+        }
     }
 }
 function createXmlHttpRequestObject() {
@@ -72,6 +84,7 @@ var currentTicketId = -1;
 var checkQueueHttpRequest = createXmlHttpRequestObject();//this object will be used in order to make ajax calls to checkQueue
 var requestTicketHttpRequest = createXmlHttpRequestObject();//this object will be used in order to make ajax calls to checkQueue
 var renewTicketHttpRequest = createXmlHttpRequestObject();//this object will be used in order to make ajax calls to checkQueue
+var startControlHttpRequest = createXmlHttpRequestObject();//this object will be used in order to make ajax calls to checkQueue
 
 
 function checkQueue() {
@@ -98,12 +111,17 @@ function checkQueueResponse() {
 
             //update serving, clock and queue size
             serving = "Serving id " + responseJSON.servingId;
-            if (responseJSON.remainingSeconds>0&& clock.time != responseJSON.remainingSeconds) {
+            if (responseJSON.remainingSeconds > 0 && clock.time != responseJSON.remainingSeconds) {
                 clock.setTime(responseJSON.remainingSeconds);
                 clock.start();
             }
             queueSize = responseJSON.queueSize + " " + (responseJSON.queueSize == 1 ? "person" : "people") + " in queue";
-            $("#queueSize").innerHTML = queueSize;
+            $("#queueSize").text(queueSize);
+            if (currentTicketId != -1) {
+                if (parseInt(responseJSON.servingId) === currentTicketId) {
+                    startControlSession();
+                }
+            }
         }
     }
 }
@@ -130,9 +148,10 @@ function requestTicketResponse() {
             var responseJSON;
             responseJSON = JSON.parse(requestTicketHttpRequest.responseText);
             currentTicketId = parseInt(responseJSON.ticketId);
-            $("#yourNumber").text( "You are the number " + currentTicketId);
+            $("#yourNumber").text("You are the number " + currentTicketId);
+            checkQueue();
         } else {
-            alert("There was a problem accessing the server: " + requestTicketHttpRequest.statusText);
+            alert("There was a problem accessing the server(request): " + requestTicketHttpRequest.statusText);
         }
     }
 }
@@ -158,11 +177,22 @@ function renewTicketResponse() {
         if (renewTicketHttpRequest.status === 200) {
             var responseJSON;
             responseJSON = JSON.parse(renewTicketHttpRequest.responseText);
-            if (responseJSON) {
-                setTimeout(renewTicket, 1000);//renew again after a second
+            if (!responseJSON) {
+                alert("error");
+                //setTimeout(renewTicket, 1000);//renew again after a second
             }
         } else {
-            alert("There was a problem accessing the server: " + renewTicketHttpRequest.statusText);
+            //alert("There was a problem accessing the server(renew): " + renewTicketHttpRequest.statusText);
         }
     }
+}
+function startControlSession() {
+    "use strict";
+    if(ros==null)
+        clock.stop = function () {
+            initNavigator(false);
+            clock.stop = null;
+
+        };
+    initNavigator(true);
 }

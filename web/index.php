@@ -21,6 +21,12 @@
 <body onload="init()" style="background-color: rgb(238,238,238)">
 <div id="__blaze-root">
     <div class="ui main container">
+        <div class="ui center aligned header">
+            <img id="logo" src="images/logo.png"/>
+            <img id="uni-title" src="images/University.png"/>
+            <img id="robotLogo" src="images/Robot.png"/>
+        </div>
+
         <h1 class="ui center aligned header">
             Robot driven tour of the School of Computer Science
             <div class="sub header">One visitor at a time</div>
@@ -40,12 +46,12 @@
         </div>
         <div class="ui one column center aligned centered grid">
             <?php if ($handle == $handle) { //true - checks if the stream is available?>
-            <div class="column" id="clockContainer">
-                <h1 class="ui center aligned header">
-                    <div class="sub header">Time to the next person</div>
-                </h1>
-                <div class="countdown-clock flip-clock-wrapper" style="width: 310px"></div>
-            </div>
+                <div class="column" id="clockContainer">
+                    <h1 class="ui center aligned header">
+                        <div class="sub header">Time to the next person</div>
+                    </h1>
+                    <div class="countdown-clock flip-clock-wrapper" style="width: 310px"></div>
+                </div>
             <?php } ?>
         </div>
         <div class="ui one column center aligned grid">

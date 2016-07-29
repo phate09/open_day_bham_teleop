@@ -5,7 +5,7 @@
 /**
  * Setup all GUI elements when the page is loaded.
  */
-var src = "http://86.31.216.84:8080/stream?topic=/head_xtion/rgb/image_mono";
+var src = "http://localhost:8080/stream?topic=/head_xtion/rgb/image_mono";
 
 function init() {
     "use strict";
@@ -42,7 +42,7 @@ function initNavigator(flag) {
             if (ros == null) {
                 // Connect to ROS.
                 ros = new ROSLIB.Ros({
-                    url: 'ws://86.31.216.84:9090'
+                    url: 'ws://localhost:9090'
                 });
 
                 // Create the main viewer.
@@ -62,7 +62,7 @@ function initNavigator(flag) {
             }
         } else {
             $("#nav").empty();
-            ros=null;
+            ros = null;
         }
     }
 }
@@ -116,7 +116,9 @@ function checkQueueResponse() {
                 clock.start();
             }
             queueSize = responseJSON.queueSize + " " + (responseJSON.queueSize == 1 ? "person" : "people") + " in queue";
-            $("#queueSize").text(queueSize);
+            if ($("#queueSize").text() != queueSize) {
+                $("#queueSize").text(queueSize);
+            }
             if (currentTicketId != -1) {
                 if (parseInt(responseJSON.servingId) === currentTicketId) {
                     startControlSession();
@@ -188,7 +190,7 @@ function renewTicketResponse() {
 }
 function startControlSession() {
     "use strict";
-    if(ros==null)
+    if (ros == null)
         clock.stop = function () {
             initNavigator(false);
             clock.stop = null;

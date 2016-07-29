@@ -3,3 +3,157 @@
     width: 640px;
     height: 480px;
 }
+body{
+    background: #D6D6D6;
+    min-width: 1000px;
+}
+#logo {
+    width: 150px;
+}
+
+#uni-title {
+    width: 700px;
+}
+#robotLogo {
+    width: 100px
+}
+.header h1 {
+    color: white;
+    text-align: center;
+    font-size: 2rem;
+    background: #424242;
+    position: relative;
+    top: -55px;
+}
+.header p {
+    color: white;
+    text-align: center;
+    position: relative;
+    top: -150px;
+    font-size: 1.2em;
+}
+.header .university {
+    position: relative;
+    top: -90px ;
+    left: auto;
+    right: auto;
+}
+.header h2 {
+    color: white;
+    position: relative;
+    top: -145px;
+    text-align: center;
+    font-size: 22px;
+    font-weight: bold;
+}
+.header .robot {
+    position: relative;
+    top: 0;
+    left: 30px;
+}
+.header .Perardua {
+    position: relative;
+    right: 30px;
+    top: 20px;
+}
+/*.header {*/
+    /*background: #505050;*/
+    /*width: 100%;*/
+/*}*/
+body {
+    margin:0;
+    padding:0;
+    overflow-x:hidden;
+    min-width:320px;
+    background:#ffffff;
+    font-family:'Lato', 'Helvetica Neue', Arial, Helvetica, sans-serif;
+    font-size:14px;
+    line-height:1.4em;
+    color:rgba(0, 0, 0, 0.87);
+}
+.center{
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    align-items: center;
+    justify-content: center;
+}
+.row{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+.column{
+    display: -webkit-box;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+}
+.subheader{
+    line-height: 1.2em;
+    font-size: 1.14rem;
+    display: block;
+    color: rgba(0, 0, 0, 0.6);
+}
+button{
+    background-clip: border-box;
+    background-origin: padding-box;
+    background: rgb(33, 133, 208) none repeat scroll 0% 0%;
+    background-size: auto auto;
+    border-image-outset: 0 0 0 0;
+    border-image-repeat: stretch stretch;
+    border-image-slice: 100% 100% 100% 100%;
+    border-image-source: none;
+    border-image-width: 1 1 1 1;
+    border-radius: 4px;
+    border: 0px none rgb(255, 255, 255);
+    box-shadow: rgba(34, 36, 38, 0.15) 0px 0px 0px 0px inset;
+    box-sizing: border-box;
+    color: rgb(255, 255, 255);
+    cursor: pointer;
+    display: inline-block;
+    font-family: "Lato","Helvetica Neue",Arial,Helvetica,sans-serif;
+    font-feature-settings: normal;
+    font-kerning: auto;
+    font-language-override: normal;
+    font-size-adjust: none;
+    font-stretch: normal;
+    font-style: normal;
+    font-synthesis: weight style;
+    font-variant: normal;
+    font-variant-alternates: normal;
+    font-variant-caps: normal;
+    font-variant-east-asian: normal;
+    font-variant-ligatures: normal;
+    font-variant-numeric: normal;
+    font-variant-position: normal;
+    font-weight: 700;
+    line-height: 14px;
+    margin: 0;
+    min-height: 14px;
+    outline: rgb(255, 255, 255) none 0;
+    overflow: visible;
+    padding: 0.78em 1.5em;
+    text-align: center;
+    text-decoration: none;
+    text-decoration-color: rgb(255, 255, 255);
+    text-decoration-style: solid;
+    text-shadow: none;
+    text-transform: none;
+    transition-delay: 0s, 0s, 0s, 0s, 0s;
+    transition-duration: 0.1s, 0.1s, 0.1s, 0.1s, 0.1s;
+    transition-property: opacity, background-color, color, box-shadow, background;
+    transition-timing-function: ease, ease, ease, ease, ease;
+    vertical-align: baseline;
+    -moz-border-bottom-colors: none;
+    -moz-border-left-colors: none;
+    -moz-border-right-colors: none;
+    -moz-border-top-colors: none;
+    -moz-user-select: none;
+
+
+
+}

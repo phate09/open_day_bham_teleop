@@ -12,8 +12,8 @@
     <script type="text/javascript" src="http://cdn.robotwebtools.org/mjpegcanvasjs/current/mjpegcanvas.min.js"></script>
     <script type="text/javascript" src="resources/jquery-3.1.0.min.js"></script>
     <link rel="stylesheet" href="resources/flipclock.css">
-    <link rel="stylesheet" href="resources/mostBig.css">
-    <link rel="stylesheet" href="resources/mostSmall.css">
+    <!--    <link rel="stylesheet" href="resources/mostBig.css">-->
+    <!--    <link rel="stylesheet" href="resources/mostSmall.css">-->
     <link rel="stylesheet" href="resources/main.css">
     <script src="resources/flipclock.min.js"></script>
     <script type="text/javascript" src="resources/main.js"></script>
@@ -21,19 +21,28 @@
 <body onload="init()" style="background-color: rgb(238,238,238)">
 <div id="__blaze-root">
     <div class="ui main container">
-        <div class="ui center aligned header">
-            <img id="logo" src="images/logo.png"/>
-            <img id="uni-title" src="images/University.png"/>
-            <img id="robotLogo" src="images/Robot.png"/>
+        <div class="header">
+            <h1>
+                <div class="media">
+                <span class="Perardua">
+                    <img id="logo" src="images/logo.png"/>
+                </span>
+                <span class="university">
+                    <img id="uni-title" src="images/University.png"/>
+                </span>
+                <span class="robot">
+                    <img id="robotLogo" src="images/Robot.png"/>
+                </span>
+                </div>
+            </h1>
+            <h2> Robot driven tour of the School of Computer Science</h2>
+            <p> One visitor at a time</p>
         </div>
 
-        <h1 class="ui center aligned header">
-            Robot driven tour of the School of Computer Science
-            <div class="sub header">One visitor at a time</div>
-        </h1>
-        <div class="ui one column center aligned grid">
+
+        <div class="column center">
             <?php //check if the stream is available
-            $src = "http://86.31.216.84:8080/stream?topic=/head_xtion/rgb/image_mono";
+            $src = "http://localhost:8080/stream?topic=/head_xtion/rgb/image_mono";
             $handle = fopen($src, "r");
             if ($handle == false) { //stream not available
                 $src = "resources/stream-not-available.png";
@@ -44,19 +53,21 @@
                 <div id="nav"></div>
             <?php } ?>
         </div>
-        <div class="ui one column center aligned centered grid">
+        <div class="column center">
             <?php if ($handle == $handle) { //true - checks if the stream is available?>
-                <div class="column" id="clockContainer">
-                    <h1 class="ui center aligned header">
-                        <div class="sub header">Time to the next person</div>
+                <div id="clockContainer">
+                    <h1>
+                        <div class="subheader">Time to the next person</div>
                     </h1>
                     <div class="countdown-clock flip-clock-wrapper" style="width: 310px"></div>
                 </div>
             <?php } ?>
         </div>
-        <div class="ui one column center aligned grid">
-            <div id="yourNumber"></div>
+        <div class="column center">
+
             <button id="getTicket" class="ui primary button" onclick="requestTicket()">Get a ticket</button>
+            <div id="yourNumber"></div>
+
             <div id="queueSize">0 people in queue</div>
         </div>
 

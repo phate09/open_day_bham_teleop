@@ -880,69 +880,69 @@ textarea::selection,input::selection {
 	vertical-align:middle;
 	z-index:1
 }
-.ui.animated.button .content {
+.ui.animated.button .content-body {
 	will-change:transform, opacity
 }
-.ui.animated.button .visible.content {
+.ui.animated.button .visible.content-body {
 	position:relative;
 	margin-right:1.5em
 }
-.ui.animated.button .hidden.content {
+.ui.animated.button .hidden.content-body {
 	position:absolute;
 	width:100%
 }
-.ui.animated.button .visible.content,.ui.animated.button .hidden.content {
+.ui.animated.button .visible.content-body,.ui.animated.button .hidden.content-body {
 	-webkit-transition:right 0.3s ease 0s;
 	transition:right 0.3s ease 0s
 }
-.ui.animated.button .visible.content {
+.ui.animated.button .visible.content-body {
 	left:auto;
 	right:0%
 }
-.ui.animated.button .hidden.content {
+.ui.animated.button .hidden.content-body {
 	top:50%;
 	left:auto;
 	right:-100%;
 	margin-top:-0.5em
 }
-.ui.animated.button:focus .visible.content,.ui.animated.button:hover .visible.content {
+.ui.animated.button:focus .visible.content-body,.ui.animated.button:hover .visible.content-body {
 	left:auto;
 	right:200%
 }
-.ui.animated.button:focus .hidden.content,.ui.animated.button:hover .hidden.content {
+.ui.animated.button:focus .hidden.content-body,.ui.animated.button:hover .hidden.content-body {
 	left:auto;
 	right:0%
 }
-.ui.vertical.animated.button .visible.content,.ui.vertical.animated.button .hidden.content {
+.ui.vertical.animated.button .visible.content-body,.ui.vertical.animated.button .hidden.content-body {
 	-webkit-transition:top 0.3s ease, -webkit-transform 0.3s ease;
 	transition:top 0.3s ease, transform 0.3s ease
 }
-.ui.vertical.animated.button .visible.content {
+.ui.vertical.animated.button .visible.content-body {
 	-webkit-transform:translateY(0%);
 	-ms-transform:translateY(0%);
 	transform:translateY(0%);
 	right:auto
 }
-.ui.vertical.animated.button .hidden.content {
+.ui.vertical.animated.button .hidden.content-body {
 	top:-50%;
 	left:0%;
 	right:auto
 }
-.ui.vertical.animated.button:focus .visible.content,.ui.vertical.animated.button:hover .visible.content {
+.ui.vertical.animated.button:focus .visible.content-body,.ui.vertical.animated.button:hover .visible.content-body {
 	-webkit-transform:translateY(200%);
 	-ms-transform:translateY(200%);
 	transform:translateY(200%);
 	right:auto
 }
-.ui.vertical.animated.button:focus .hidden.content,.ui.vertical.animated.button:hover .hidden.content {
+.ui.vertical.animated.button:focus .hidden.content-body,.ui.vertical.animated.button:hover .hidden.content-body {
 	top:50%;
 	right:auto
 }
-.ui.fade.animated.button .visible.content,.ui.fade.animated.button .hidden.content {
+.ui.fade.animated.button .visible.content-body,.ui.fade.animated.button .hidden.content-body {
 	-webkit-transition:opacity 0.3s ease, -webkit-transform 0.3s ease;
 	transition:opacity 0.3s ease, transform 0.3s ease
 }
-.ui.fade.animated.button .visible.content {
+.ui.fade.animated.button .visible.content-body {
 	left:auto;
 	right:auto;
 	opacity:1;
@@ -950,7 +950,7 @@ textarea::selection,input::selection {
 	-ms-transform:scale(1);
 	transform:scale(1)
 }
-.ui.fade.animated.button .hidden.content {
+.ui.fade.animated.button .hidden.content-body {
 	opacity:0;
 	left:0%;
 	right:auto;
@@ -958,7 +958,7 @@ textarea::selection,input::selection {
 	-ms-transform:scale(1.5);
 	transform:scale(1.5)
 }
-.ui.fade.animated.button:focus .visible.content,.ui.fade.animated.button:hover .visible.content {
+.ui.fade.animated.button:focus .visible.content-body,.ui.fade.animated.button:hover .visible.content-body {
 	left:auto;
 	right:auto;
 	opacity:0;
@@ -966,7 +966,7 @@ textarea::selection,input::selection {
 	-ms-transform:scale(0.75);
 	transform:scale(0.75)
 }
-.ui.fade.animated.button:focus .hidden.content,.ui.fade.animated.button:hover .hidden.content {
+.ui.fade.animated.button:focus .hidden.content-body,.ui.fade.animated.button:hover .hidden.content-body {
 	left:0%;
 	right:auto;
 	opacity:1;
@@ -4173,15 +4173,15 @@ i.flag.zw:before,i.flag.zimbabwe:before {
 .ui.header>.image:only-child,.ui.header>img:only-child {
 	margin-right:0.75rem
 }
-.ui.header .content {
+.ui.header .content-body {
 	display:inline-block;
 	vertical-align:top
 }
-.ui.header>img+.content,.ui.header>.image+.content {
+.ui.header>img+.content-body,.ui.header>.image+.content-body {
 	padding-left:0.75rem;
 	vertical-align:middle
 }
-.ui.header>.icon+.content {
+.ui.header>.icon+.content-body {
 	padding-left:0.75rem;
 	display:table-cell;
 	vertical-align:middle
@@ -4301,7 +4301,7 @@ h5.ui.header .sub.header {
 	margin:0em auto 0.5rem;
 	opacity:1
 }
-.ui.icon.header .content {
+.ui.icon.header .content-body {
 	display:block
 }
 .ui.icon.header .circular.icon {
@@ -6083,10 +6083,10 @@ i.icon.sort.alphabet.ascending:before {
 i.icon.sort.alphabet.descending:before {
 	content:"\f15e"
 }
-i.icon.sort.content.ascending:before {
+i.icon.sort.content-body.ascending:before {
 	content:"\f160"
 }
-i.icon.sort.content.descending:before {
+i.icon.sort.content-body.descending:before {
 	content:"\f161"
 }
 i.icon.sort.numeric.ascending:before {
@@ -6146,7 +6146,7 @@ i.icon.attach:before {
 i.icon.save:before {
 	content:"\f0c7"
 }
-i.icon.content:before {
+i.icon.content-body:before {
 	content:"\f0c9"
 }
 i.icon.unordered.list:before {
@@ -8413,18 +8413,18 @@ ul.ui.list ul li,ol.ui.list ol li,.ui.list .list>.item {
 .ui.list .list>.item>img.image,.ui.list .list>.item>.image:only-child,.ui.list>.item>img.image,.ui.list>.item>.image:only-child {
 	display:inline-block
 }
-.ui.list .list>.item>.content,.ui.list>.item>.content {
+.ui.list .list>.item>.content-body,.ui.list>.item>.content-body {
 	line-height:1.14285714em
 }
-.ui.list .list>.item>.image+.content,.ui.list .list>.item>.icon+.content,.ui.list>.item>.image+.content,.ui.list>.item>.icon+.content {
+.ui.list .list>.item>.image+.content-body,.ui.list .list>.item>.icon+.content-body,.ui.list>.item>.image+.content-body,.ui.list>.item>.icon+.content-body {
 	display:table-cell;
 	padding:0em 0em 0em 0.5em;
 	vertical-align:top
 }
-.ui.list .list>.item>img.image+.content,.ui.list>.item>img.image+.content {
+.ui.list .list>.item>img.image+.content-body,.ui.list>.item>img.image+.content-body {
 	display:inline-block
 }
-.ui.list .list>.item>.content>.list,.ui.list>.item>.content>.list {
+.ui.list .list>.item>.content-body >.list,.ui.list>.item>.content-body >.list {
 	margin-left:0em;
 	padding-left:0em
 }
@@ -8509,7 +8509,7 @@ ul.ui.list ul li,ol.ui.list ol li,.ui.list .list>.item {
 	padding-left:0em;
 	padding-bottom:0em
 }
-.ui.horizontal.list>.item>.image,.ui.horizontal.list .list>.item>.image,.ui.horizontal.list>.item>.icon,.ui.horizontal.list .list>.item>.icon,.ui.horizontal.list>.item>.content,.ui.horizontal.list .list>.item>.content {
+.ui.horizontal.list>.item>.image,.ui.horizontal.list .list>.item>.image,.ui.horizontal.list>.item>.icon,.ui.horizontal.list .list>.item>.icon,.ui.horizontal.list>.item>.content-body,.ui.horizontal.list .list>.item>.content-body {
 	vertical-align:middle
 }
 .ui.horizontal.list>.item:first-child,.ui.horizontal.list>.item:last-child {
@@ -8520,7 +8520,7 @@ ul.ui.list ul li,ol.ui.list ol li,.ui.list .list>.item {
 	margin:0em;
 	padding:0em 0.25em 0em 0em
 }
-.ui.horizontal.list>.item>.icon,.ui.horizontal.list>.item>.icon+.content {
+.ui.horizontal.list>.item>.icon,.ui.horizontal.list>.item>.icon+.content-body {
 	float:none;
 	display:inline-block
 }
@@ -8556,13 +8556,13 @@ ul.ui.list ul li,ol.ui.list ol li,.ui.list .list>.item {
 .ui.inverted.list .item a:not(.ui):hover {
 	color:#1e70bf !important
 }
-.ui.list[class*="top aligned"] .image,.ui.list[class*="top aligned"] .content,.ui.list [class*="top aligned"] {
+.ui.list[class*="top aligned"] .image,.ui.list[class*="top aligned"] .content-body,.ui.list [class*="top aligned"] {
 	vertical-align:top !important
 }
-.ui.list[class*="middle aligned"] .image,.ui.list[class*="middle aligned"] .content,.ui.list [class*="middle aligned"] {
+.ui.list[class*="middle aligned"] .image,.ui.list[class*="middle aligned"] .content-body,.ui.list [class*="middle aligned"] {
 	vertical-align:middle !important
 }
-.ui.list[class*="bottom aligned"] .image,.ui.list[class*="bottom aligned"] .content,.ui.list [class*="bottom aligned"] {
+.ui.list[class*="bottom aligned"] .image,.ui.list[class*="bottom aligned"] .content-body,.ui.list [class*="bottom aligned"] {
 	vertical-align:bottom !important
 }
 .ui.link.list .item,.ui.link.list a.item,.ui.link.list .item a:not(.ui) {
@@ -9188,7 +9188,7 @@ ol.ui.horizontal.list li:before,.ui.ordered.horizontal.list .list>.item:before,.
 	position:relative !important;
 	font-size:0em !important
 }
-.ui.reveal>.visible.content {
+.ui.reveal>.visible.content-body {
 	position:absolute !important;
 	top:0em !important;
 	left:0em !important;
@@ -9196,11 +9196,11 @@ ol.ui.horizontal.list li:before,.ui.ordered.horizontal.list .list>.item:before,.
 	-webkit-transition:all 0.5s ease 0.1s;
 	transition:all 0.5s ease 0.1s
 }
-.ui.reveal>.hidden.content {
+.ui.reveal>.hidden.content-body {
 	position:relative !important;
 	z-index:2 !important
 }
-.ui.active.reveal .visible.content,.ui.reveal:hover .visible.content {
+.ui.active.reveal .visible.content-body,.ui.reveal:hover .visible.content-body {
 	z-index:4 !important
 }
 .ui.slide.reveal {
@@ -9208,7 +9208,7 @@ ol.ui.horizontal.list li:before,.ui.ordered.horizontal.list .list>.item:before,.
 	overflow:hidden !important;
 	white-space:nowrap
 }
-.ui.slide.reveal>.content {
+.ui.slide.reveal>.content-body {
 	display:block;
 	width:100%;
 	float:left;
@@ -9216,10 +9216,10 @@ ol.ui.horizontal.list li:before,.ui.ordered.horizontal.list .list>.item:before,.
 	-webkit-transition:-webkit-transform 0.5s ease 0.1s;
 	transition:transform 0.5s ease 0.1s
 }
-.ui.slide.reveal>.visible.content {
+.ui.slide.reveal>.visible.content-body {
 	position:relative !important
 }
-.ui.slide.reveal>.hidden.content {
+.ui.slide.reveal>.hidden.content-body {
 	position:absolute !important;
 	left:0% !important;
 	width:100% !important;
@@ -9227,70 +9227,70 @@ ol.ui.horizontal.list li:before,.ui.ordered.horizontal.list .list>.item:before,.
 	-ms-transform:translateX(100%) !important;
 	transform:translateX(100%) !important
 }
-.ui.slide.active.reveal>.visible.content,.ui.slide.reveal:hover>.visible.content {
+.ui.slide.active.reveal>.visible.content-body,.ui.slide.reveal:hover>.visible.content-body {
 	-webkit-transform:translateX(-100%) !important;
 	-ms-transform:translateX(-100%) !important;
 	transform:translateX(-100%) !important
 }
-.ui.slide.active.reveal>.hidden.content,.ui.slide.reveal:hover>.hidden.content {
+.ui.slide.active.reveal>.hidden.content-body,.ui.slide.reveal:hover>.hidden.content-body {
 	-webkit-transform:translateX(0%) !important;
 	-ms-transform:translateX(0%) !important;
 	transform:translateX(0%) !important
 }
-.ui.slide.right.reveal>.visible.content {
+.ui.slide.right.reveal>.visible.content-body {
 	-webkit-transform:translateX(0%) !important;
 	-ms-transform:translateX(0%) !important;
 	transform:translateX(0%) !important
 }
-.ui.slide.right.reveal>.hidden.content {
+.ui.slide.right.reveal>.hidden.content-body {
 	-webkit-transform:translateX(-100%) !important;
 	-ms-transform:translateX(-100%) !important;
 	transform:translateX(-100%) !important
 }
-.ui.slide.right.active.reveal>.visible.content,.ui.slide.right.reveal:hover>.visible.content {
+.ui.slide.right.active.reveal>.visible.content-body,.ui.slide.right.reveal:hover>.visible.content-body {
 	-webkit-transform:translateX(100%) !important;
 	-ms-transform:translateX(100%) !important;
 	transform:translateX(100%) !important
 }
-.ui.slide.right.active.reveal>.hidden.content,.ui.slide.right.reveal:hover>.hidden.content {
+.ui.slide.right.active.reveal>.hidden.content-body,.ui.slide.right.reveal:hover>.hidden.content-body {
 	-webkit-transform:translateX(0%) !important;
 	-ms-transform:translateX(0%) !important;
 	transform:translateX(0%) !important
 }
-.ui.slide.up.reveal>.hidden.content {
+.ui.slide.up.reveal>.hidden.content-body {
 	-webkit-transform:translateY(100%) !important;
 	-ms-transform:translateY(100%) !important;
 	transform:translateY(100%) !important
 }
-.ui.slide.up.active.reveal>.visible.content,.ui.slide.up.reveal:hover>.visible.content {
+.ui.slide.up.active.reveal>.visible.content-body,.ui.slide.up.reveal:hover>.visible.content-body {
 	-webkit-transform:translateY(-100%) !important;
 	-ms-transform:translateY(-100%) !important;
 	transform:translateY(-100%) !important
 }
-.ui.slide.up.active.reveal>.hidden.content,.ui.slide.up.reveal:hover>.hidden.content {
+.ui.slide.up.active.reveal>.hidden.content-body,.ui.slide.up.reveal:hover>.hidden.content-body {
 	-webkit-transform:translateY(0%) !important;
 	-ms-transform:translateY(0%) !important;
 	transform:translateY(0%) !important
 }
-.ui.slide.down.reveal>.hidden.content {
+.ui.slide.down.reveal>.hidden.content-body {
 	-webkit-transform:translateY(-100%) !important;
 	-ms-transform:translateY(-100%) !important;
 	transform:translateY(-100%) !important
 }
-.ui.slide.down.active.reveal>.visible.content,.ui.slide.down.reveal:hover>.visible.content {
+.ui.slide.down.active.reveal>.visible.content-body,.ui.slide.down.reveal:hover>.visible.content-body {
 	-webkit-transform:translateY(100%) !important;
 	-ms-transform:translateY(100%) !important;
 	transform:translateY(100%) !important
 }
-.ui.slide.down.active.reveal>.hidden.content,.ui.slide.down.reveal:hover>.hidden.content {
+.ui.slide.down.active.reveal>.hidden.content-body,.ui.slide.down.reveal:hover>.hidden.content-body {
 	-webkit-transform:translateY(0%) !important;
 	-ms-transform:translateY(0%) !important;
 	transform:translateY(0%) !important
 }
-.ui.fade.reveal>.visible.content {
+.ui.fade.reveal>.visible.content-body {
 	opacity:1
 }
-.ui.fade.active.reveal>.visible.content,.ui.fade.reveal:hover>.visible.content {
+.ui.fade.active.reveal>.visible.content-body,.ui.fade.reveal:hover>.visible.content-body {
 	opacity:0
 }
 .ui.move.reveal {
@@ -9298,69 +9298,69 @@ ol.ui.horizontal.list li:before,.ui.ordered.horizontal.list .list>.item:before,.
 	overflow:hidden !important;
 	white-space:nowrap
 }
-.ui.move.reveal>.content {
+.ui.move.reveal>.content-body {
 	display:block;
 	float:left;
 	margin:0em;
 	-webkit-transition:-webkit-transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1) 0.1s;
 	transition:transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1) 0.1s
 }
-.ui.move.reveal>.visible.content {
+.ui.move.reveal>.visible.content-body {
 	position:relative !important
 }
-.ui.move.reveal>.hidden.content {
+.ui.move.reveal>.hidden.content-body {
 	position:absolute !important;
 	left:0% !important;
 	width:100% !important
 }
-.ui.move.active.reveal>.visible.content,.ui.move.reveal:hover>.visible.content {
+.ui.move.active.reveal>.visible.content-body,.ui.move.reveal:hover>.visible.content-body {
 	-webkit-transform:translateX(-100%) !important;
 	-ms-transform:translateX(-100%) !important;
 	transform:translateX(-100%) !important
 }
-.ui.move.right.active.reveal>.visible.content,.ui.move.right.reveal:hover>.visible.content {
+.ui.move.right.active.reveal>.visible.content-body,.ui.move.right.reveal:hover>.visible.content-body {
 	-webkit-transform:translateX(100%) !important;
 	-ms-transform:translateX(100%) !important;
 	transform:translateX(100%) !important
 }
-.ui.move.up.active.reveal>.visible.content,.ui.move.up.reveal:hover>.visible.content {
+.ui.move.up.active.reveal>.visible.content-body,.ui.move.up.reveal:hover>.visible.content-body {
 	-webkit-transform:translateY(-100%) !important;
 	-ms-transform:translateY(-100%) !important;
 	transform:translateY(-100%) !important
 }
-.ui.move.down.active.reveal>.visible.content,.ui.move.down.reveal:hover>.visible.content {
+.ui.move.down.active.reveal>.visible.content-body,.ui.move.down.reveal:hover>.visible.content-body {
 	-webkit-transform:translateY(100%) !important;
 	-ms-transform:translateY(100%) !important;
 	transform:translateY(100%) !important
 }
-.ui.rotate.reveal>.visible.content {
+.ui.rotate.reveal>.visible.content-body {
 	-webkit-transition-duration:0.5s;
 	transition-duration:0.5s;
 	-webkit-transform:rotate(0deg);
 	-ms-transform:rotate(0deg);
 	transform:rotate(0deg)
 }
-.ui.rotate.reveal>.visible.content,.ui.rotate.right.reveal>.visible.content {
+.ui.rotate.reveal>.visible.content-body,.ui.rotate.right.reveal>.visible.content-body {
 	-webkit-transform-origin:bottom right;
 	-ms-transform-origin:bottom right;
 	transform-origin:bottom right
 }
-.ui.rotate.active.reveal>.visible.conten,.ui.rotate.reveal:hover>.visible.content,.ui.rotate.right.active.reveal>.visible.content,.ui.rotate.right.reveal:hover>.visible.content {
+.ui.rotate.active.reveal>.visible.conten,.ui.rotate.reveal:hover>.visible.content-body,.ui.rotate.right.active.reveal>.visible.content-body,.ui.rotate.right.reveal:hover>.visible.content-body {
 	-webkit-transform:rotate(110deg);
 	-ms-transform:rotate(110deg);
 	transform:rotate(110deg)
 }
-.ui.rotate.left.reveal>.visible.content {
+.ui.rotate.left.reveal>.visible.content-body {
 	-webkit-transform-origin:bottom left;
 	-ms-transform-origin:bottom left;
 	transform-origin:bottom left
 }
-.ui.rotate.left.active.reveal>.visible.content,.ui.rotate.left.reveal:hover>.visible.content {
+.ui.rotate.left.active.reveal>.visible.content-body,.ui.rotate.left.reveal:hover>.visible.content-body {
 	-webkit-transform:rotate(-110deg);
 	-ms-transform:rotate(-110deg);
 	transform:rotate(-110deg)
 }
-.ui.disabled.reveal:hover>.visible.visible.content {
+.ui.disabled.reveal:hover>.visible.visible.content-body {
 	position:static !important;
 	display:block !important;
 	opacity:1 !important;
@@ -9372,17 +9372,17 @@ ol.ui.horizontal.list li:before,.ui.ordered.horizontal.list .list>.item:before,.
 	-ms-transform:none !important;
 	transform:none !important
 }
-.ui.disabled.reveal:hover>.hidden.hidden.content {
+.ui.disabled.reveal:hover>.hidden.hidden.content-body {
 	display:none !important
 }
 .ui.visible.reveal {
 	overflow:visible
 }
-.ui.instant.reveal>.content {
+.ui.instant.reveal>.content-body {
 	-webkit-transition-delay:0s !important;
 	transition-delay:0s !important
 }
-.ui.reveal>.content {
+.ui.reveal>.content-body {
 	font-size:1rem !important
 }
 .ui.segment {
@@ -10033,7 +10033,7 @@ ol.ui.horizontal.list li:before,.ui.ordered.horizontal.list .list>.item:before,.
 	font-size:2.5em;
 	margin:0em 1rem 0em 0em
 }
-.ui.steps .step>.icon,.ui.steps .step>.icon ~ .content {
+.ui.steps .step>.icon,.ui.steps .step>.icon ~ .content-body {
 	display:block;
 	-webkit-box-flex:0;
 	-webkit-flex:0 1 auto;
@@ -10043,7 +10043,7 @@ ol.ui.horizontal.list li:before,.ui.ordered.horizontal.list .list>.item:before,.
 	-ms-flex-item-align:middle;
 	align-self:middle
 }
-.ui.steps .step>.icon ~ .content {
+.ui.steps .step>.icon ~ .content-body {
 	-webkit-box-flex:1 0 auto;
 	-webkit-flex-grow:1 0 auto;
 	-ms-flex-positive:1 0 auto;
@@ -10164,7 +10164,7 @@ ol.ui.horizontal.list li:before,.ui.ordered.horizontal.list .list>.item:before,.
 	.ui.steps .step:after {
 		display:none !important
 	}
-	.ui.steps .step .content {
+	.ui.steps .step .content-body {
 		text-align:center
 	}
 	.ui.steps .step>.icon,.ui.ordered.steps .step:before {
@@ -10255,7 +10255,7 @@ ol.ui.horizontal.list li:before,.ui.ordered.horizontal.list .list>.item:before,.
 	.ui[class*="tablet stackable"].steps .step:after {
 		display:none !important
 	}
-	.ui[class*="tablet stackable"].steps .step .content {
+	.ui[class*="tablet stackable"].steps .step .content-body {
 		text-align:center
 	}
 	.ui[class*="tablet stackable"].steps .step>.icon,.ui[class*="tablet stackable"].ordered.steps .step:before {

@@ -1,33 +1,107 @@
-/**
- * Created by phate09 on 24/07/16.
- */
-/*jslint latedef:nofunc*/
-/**
- * Setup all GUI elements when the page is loaded.
- */
-var src = "http://localhost:8080/stream?topic=/head_xtion/rgb/image_mono";
+// import {ROSLIB} from "roslib.js";
+// import {$} from "jquery-3.1.0.min.js";
+// import {NAV2D} from "nav2d.min";
+// import {ROS2D} from "ros2d.min";
+// import {_} from "underscore-min";
+var serverAddress = "86.31.216.84";
+// var src = "http://" + serverAddress + ":8080/stream?topic=/head_xtion/rgb/image_mono";
 
 function init() {
     "use strict";
-
+    $(".instruction_text").hide();
     initNavigator();
+    initPTUControl();
     initClock();
     loop();
 }
 
 function loop() {
-    "use strict"
+    "use strict";
     checkQueue();
     renewTicket();
     setTimeout(loop, 1000);
 }
+var ptuGoal, ptuStateListener, rosPTU;
+function initPTUControl() {
+    "use strict";
+    rosPTU = new ROSLIB.Ros({
+        url: "ws://" + serverAddress + ":9090"
+    });
+    // handle the key
+    var body = document.getElementsByTagName("body")[0];
+    ptuGoal = new ROSLIB.Topic({
+        ros: rosPTU, name: "/SetPTUState/goal", messageType: "scitos_ptu/PtuGotoActionGoal"
+    });
+    ptuStateListener = new ROSLIB.Topic({
+        ros: rosPTU, name: "/SetPTUState/result", messageType: "scitos_ptu/PtuGotoActionResult"
+    });
+    ptuStateListener.subscribe(function (message) {
+        current_pan = message.result.state.position[0];
+        current_tilt = message.result.state.position[1];
+    });
+    //limit the amount of times keydown event is called to 1 every 200 millisecs
+    body.addEventListener("keydown", _.throttle(function (e) {
+        handleKey(e.keyCode, true);
+    }, 200, {
+        leading: false, trailing: false
+    }), false);
+}
+var tilt = 0;
+var pan = 0;
+var current_pan = 0, current_tilt = 0;
+// sets up a key listener on the page used for keyboard teleoperation
+var handleKey = function (keyCode, keyDown) {
+    var pub = true;
+    // check which key was pressed
+    switch (keyCode) {
+    case 37:
+        // turn left
+        pan = current_pan + 5;
+        break;
+    case 38:
+        // up
+        tilt = current_tilt - 5;
+        break;
+    case 39:
+        // turn right
+        pan = current_pan - 5;
+        break;
+    case 40:
+        // down
+        tilt = current_tilt + 5;
+        break;
+    case 32:
+        //spacebar
+        pan = 0;
+        tilt = 0;
+        break;
+    default:
+        pub = false;
+    }
+
+    // publish the command
+    if (pub === true) {
+        var twist = new ROSLIB.Message({
+            header: {
+                seq: 1, stamp: new Date().getTime(), frame_id: ""
+            }, goal_id: {
+                stamp: new Date().getTime(), id: "",
+            }, goal: {
+                pan: pan, tilt: tilt, pan_vel: 10.0, tilt_vel: 10.0
+            }
+        });
+        if (ros) {
+
+            ptuGoal.publish(twist);
+        }
+    }
+};
 var clock;
 function initClock() {
-    if ($(".countdown-clock").length) {//if clock exists
-        clock = $('.countdown-clock').FlipClock({
-            autoStart: true,
-            countdown: true,
-            clockFace: "MinuteCounter"
+    var countdown = $(".countdown-clock");
+    if (countdown.length) {//if clock exists
+        clock = countdown.FlipClock({
+            autoStart: true, countdown: true, clockFace: "MinuteCounter"
         });
         clock.setTime(0);
         clock.start();
@@ -35,48 +109,49 @@ function initClock() {
     }
 }
 var ros;
-function initNavigator(flag) {
+function initNavigator() {
     var viewer;
-    if ($("#nav").length) {//if nav exists
-        if (flag) {
-            if (ros == null) {
-                // Connect to ROS.
-                ros = new ROSLIB.Ros({
-                    url: 'ws://localhost:9090'
-                });
+    // if ($("#nav").length) {//if nav exists
+    //     if (flag) {
+    if (ros == null) {
+        // Connect to ROS.
+        ros = new ROSLIB.Ros({
+            url: "ws://" + serverAddress + ":9090"
+        });
 
-                // Create the main viewer.
-                viewer = new ROS2D.Viewer({
-                    divID: 'nav',
-                    width: 271,//640,
-                    height: 480//1131
-                });
-                // Setup the nav client.
-                NAV2D.OccupancyGridClientNav({
-                    ros: ros,
-                    rootObject: viewer.scene,
-                    viewer: viewer,
-                    serverName: '/move_base',
-                    withOrientation: true
-                });
-            }
-        } else {
-            $("#nav").empty();
-            ros = null;
-        }
+        // Create the main viewer.
+        viewer = new ROS2D.Viewer({
+            divID: "nav", width: 318,//640,
+            height: 562//1131
+        });
+        // Setup the nav client.
+        NAV2D.OccupancyGridClientNav({
+            ros: ros, rootObject: viewer.scene, viewer: viewer, serverName: "/move_base", withOrientation: true
+        });
+        $(".instruction_text").show();
+        $("#traffic_light").attr("src", "images/remote_go.png");
     }
+    // } else {
+    //     $("#nav").empty();
+    //     $(".instruction_text").hide();
+    //     $("#traffic_light").attr("src","images/remote_time.png")
+    //     ros = null;
+    // }
+    // }
 }
 function createXmlHttpRequestObject() {
     "use strict";
     var xmlHttp;
     try {
         xmlHttp = new XMLHttpRequest();
-    } catch (e) {
+    }
+    catch (e) {
         xmlHttp = false;
     }
     if (!xmlHttp) {
         alert("Error creating the XMLHttpRequest object.");
-    } else {
+    }
+    else {
         return xmlHttp;
     }
 }
@@ -84,8 +159,7 @@ var currentTicketId = -1;
 var checkQueueHttpRequest = createXmlHttpRequestObject();//this object will be used in order to make ajax calls to checkQueue
 var requestTicketHttpRequest = createXmlHttpRequestObject();//this object will be used in order to make ajax calls to checkQueue
 var renewTicketHttpRequest = createXmlHttpRequestObject();//this object will be used in order to make ajax calls to checkQueue
-var startControlHttpRequest = createXmlHttpRequestObject();//this object will be used in order to make ajax calls to checkQueue
-
+// var startControlHttpRequest = createXmlHttpRequestObject();//this object will be used in order to make ajax calls to checkQueue
 
 function checkQueue() {
     "use strict";
@@ -94,7 +168,8 @@ function checkQueue() {
         checkQueueHttpRequest.open("GET", "resources/checkQueue.php", true);
         checkQueueHttpRequest.onreadystatechange = checkQueueResponse;
         checkQueueHttpRequest.send(null);
-    } else {
+    }
+    else {
         // if the connection is busy, try again after one second
         setTimeout(checkQueue, 1000);
     }
@@ -104,20 +179,24 @@ function checkQueueResponse() {
     if (checkQueueHttpRequest.readyState === 4) {
         //status of 200 indicates the transaction completed succesfully
         if (checkQueueHttpRequest.status === 200) {
-            var responseJSON, html, i, serving, queueSize;
-            html = "";
+            var responseJSON, queueSize, queueMsg;
             //extract the xml
             responseJSON = JSON.parse(checkQueueHttpRequest.responseText);
 
             //update serving, clock and queue size
-            serving = "Serving id " + responseJSON.servingId;
+            // serving = "Serving id " + responseJSON.servingId;
             if (responseJSON.remainingSeconds > 0 && clock.time != responseJSON.remainingSeconds) {
                 clock.setTime(responseJSON.remainingSeconds);
                 clock.start();
             }
-            queueSize = responseJSON.queueSize + " " + (responseJSON.queueSize == 1 ? "person" : "people") + " in queue";
-            if ($("#queueSize").text() != queueSize) {
-                $("#queueSize").text(queueSize);
+            queueSize = responseJSON.queueSize - 1;
+            if (queueSize < 0) {
+                queueSize = 0;
+            }
+            queueMsg = queueSize + " " + (queueSize == 1 ? "person" : "people") + " in queue";
+            var queueSizeElement = $("#queueSize");
+            if (queueSizeElement.text() != queueMsg) {
+                queueSizeElement.text(queueMsg);
             }
             if (currentTicketId != -1) {
                 if (parseInt(responseJSON.servingId) === currentTicketId) {
@@ -137,7 +216,8 @@ function requestTicket() {
         requestTicketHttpRequest.open("GET", "resources/requestTicket.php", true);
         requestTicketHttpRequest.onreadystatechange = requestTicketResponse;
         requestTicketHttpRequest.send(null);
-    } else {
+    }
+    else {
         // if the connection is busy, try again after one second
         setTimeout(requestTicket, 1000);
     }
@@ -152,7 +232,8 @@ function requestTicketResponse() {
             currentTicketId = parseInt(responseJSON.ticketId);
             $("#yourNumber").text("You are the number " + currentTicketId);
             checkQueue();
-        } else {
+        }
+        else {
             alert("There was a problem accessing the server(request): " + requestTicketHttpRequest.statusText);
         }
     }
@@ -166,7 +247,8 @@ function renewTicket() {
             renewTicketHttpRequest.open("GET", "resources/renewTicket.php?id=" + currentTicketId, true);
             renewTicketHttpRequest.onreadystatechange = renewTicketResponse;
             renewTicketHttpRequest.send(null);
-        } else {
+        }
+        else {
             // if the connection is busy, try again after one second
             setTimeout(renewTicket, 1000);
         }
@@ -183,18 +265,20 @@ function renewTicketResponse() {
                 alert("error");
                 //setTimeout(renewTicket, 1000);//renew again after a second
             }
-        } else {
+        }
+        else {
             //alert("There was a problem accessing the server(renew): " + renewTicketHttpRequest.statusText);
         }
     }
 }
 function startControlSession() {
     "use strict";
-    if (ros == null)
+    if (ros == null) {
         clock.stop = function () {
             initNavigator(false);
             clock.stop = null;
 
         };
+    }
     initNavigator(true);
 }

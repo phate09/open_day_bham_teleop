@@ -1,104 +1,160 @@
-#stream{
+#stream {
     /*margin: 1em;*/
-    width: 640px;
-    height: 480px;
+    width: 750px;
+    height: 562px;
 }
-body{
+
+body {
     background: #D6D6D6;
-    min-width: 1000px;
+    min-width: 1100px;
+    margin: 0;
+    padding: 0;
+    font-family: 'Lato', 'Helvetica Neue', Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    line-height: 1.4em;
+    color: rgba(0, 0, 0, 0.87);
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
 }
+
 #logo {
-    width: 150px;
+    /*width: 120px;*/
+    height: 100px;
+    margin-right: 40px;
 }
 
 #uni-title {
-    width: 700px;
+    width: 600px;
 }
+
 #robotLogo {
-    width: 100px
+    /*width: 100px*/
+    height: 100px;
+    margin-left: 40px;
 }
-.header h1 {
+
+.header {
     color: white;
     text-align: center;
-    font-size: 2rem;
+    vertical-align: middle;
+    font-size: 2em;
     background: #424242;
-    position: relative;
-    top: -55px;
 }
-.header p {
-    color: white;
+
+.header + div {
+    margin-top: 2em;
+}
+.content-body {
+    display: flex;
+    flex: 1;
+}
+.central-content {
+     flex: 1;
+ }
+
+.left-nav, .right-nav {
+    /* 12em is the width of the columns */
+    flex: 0 0 12em;
+}
+
+.left-nav {
+    /* put the nav on the left */
+    order: -1;
     text-align: center;
-    position: relative;
-    top: -150px;
-    font-size: 1.2em;
-}
-.header .university {
-    position: relative;
-    top: -90px ;
-    left: auto;
-    right: auto;
 }
 .header h2 {
     color: white;
-    position: relative;
-    top: -145px;
     text-align: center;
     font-size: 22px;
-    font-weight: bold;
+    font-weight: 600;
 }
-.header .robot {
-    position: relative;
-    top: 0;
-    left: 30px;
+
+.header h2 + span {
+    font-size: 0.8rem;
+    color: white;
 }
-.header .Perardua {
-    position: relative;
-    right: 30px;
-    top: 20px;
-}
-/*.header {*/
-    /*background: #505050;*/
-    /*width: 100%;*/
-/*}*/
-body {
-    margin:0;
-    padding:0;
-    overflow-x:hidden;
-    min-width:320px;
-    background:#ffffff;
-    font-family:'Lato', 'Helvetica Neue', Arial, Helvetica, sans-serif;
-    font-size:14px;
-    line-height:1.4em;
-    color:rgba(0, 0, 0, 0.87);
-}
-.center{
+
+.center {
     text-align: center;
-    margin-left: auto;
-    margin-right: auto;
+    /*margin-left: auto;*/
+    /*margin-right: auto;*/
     align-items: center;
     justify-content: center;
 }
-.row{
+
+.left {
+    text-align: left;
+    margin-left: 0;
+    /*margin-right: auto;*/
+    align-items: flex-start;
+    justify-content: flex-start;
+}
+
+.multicolumns {
+    text-align: justify;
+    -moz-column-count: 2;
+    -moz-column-gap: 1em;
+    /*-moz-column-rule: 1px solid black;*/
+    -webkit-column-count: 2;
+    -webkit-column-gap: 1em;
+    /*-webkit-column-rule: 1px solid black;*/
+    column-count: 2;
+    column-gap: 1em;
+    /*column-rule: 1px solid black;*/
+}
+
+.row {
+    display: -webkit-box;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: -webkit-flex;
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
 }
-.column{
+
+.column {
     display: -webkit-box;
     display: -moz-box;
     display: -ms-flexbox;
     display: -webkit-flex;
     display: flex;
     flex-direction: column;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
 }
-.subheader{
+.locations{
+    margin: 2px;
+    /*margin-left: 3em;*/
+    /*margin-right: 1em;*/
+    display: block;
+    /*align-self: flex-start;*/
+    width: 15em;
+}
+/*.footer{*/
+    /*max-height: 250px;*/
+/*}*/
+#traffic_light {
+    width: 70px;
+    height: 70px;
+}
+#clockContainer{
+    /*margin-top: 3px;*/
+    /*margin-bottom: 3px;*/
+}
+.subheader {
     line-height: 1.2em;
     font-size: 1.14rem;
     display: block;
     color: rgba(0, 0, 0, 0.6);
 }
-button{
+.countdown-clock{
+    zoom: 0.66;
+    -moz-transform: scale(0.66);
+    margin-top: -20px;
+    margin-bottom: -20px;
+}
+button {
     background-clip: border-box;
     background-origin: padding-box;
     background: rgb(33, 133, 208) none repeat scroll 0% 0%;
@@ -115,7 +171,7 @@ button{
     color: rgb(255, 255, 255);
     cursor: pointer;
     display: inline-block;
-    font-family: "Lato","Helvetica Neue",Arial,Helvetica,sans-serif;
+    font-family: "Lato", "Helvetica Neue", Arial, Helvetica, sans-serif;
     font-feature-settings: normal;
     font-kerning: auto;
     font-language-override: normal;
@@ -153,7 +209,5 @@ button{
     -moz-border-right-colors: none;
     -moz-border-top-colors: none;
     -moz-user-select: none;
-
-
 
 }

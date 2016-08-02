@@ -1,0 +1,47 @@
+{
+  "rules": {
+//    "eqeqeq": 0,
+//    "brace-style": [
+//      2,
+//      "stroustrup"
+//    ],
+//    "eol-last": 0,
+//    "no-nested-ternary": 1,
+//    "padded-blocks": [
+//      1,
+//      "never"
+//    ],
+//    "space-after-function-name": [
+//      1,
+//      "never"
+//    ],
+//    "space-before-blocks": [
+//      1,
+//      "always"
+//    ],
+    "indent": [
+      "error",
+      4
+    ],
+    "linebreak-style": [
+      "error",
+      "unix"
+    ],
+    "quotes": [
+      "error",
+      "double"
+    ],
+    "semi": [
+      "error",
+      "always"
+    ]
+  },
+  "env": {
+    "browser": true,
+    "es6": true
+  },
+  "extends": "eslint:recommended",
+  "parserOptions": {
+    "sourceType": "module"
+  }
+}

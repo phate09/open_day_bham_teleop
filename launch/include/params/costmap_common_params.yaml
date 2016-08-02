@@ -10,7 +10,7 @@ robot_radius: 0.20  # distance a circular robot should be clear of the obstacle 
 inflation_radius: 0.50  # max. distance from an obstacle at which costs are incurred for planning paths.
 cost_scaling_factor: 5  # exponential rate at which the obstacle cost drops off (default: 10)
 
-# voxel map configuration; z-voxels 0 are filled by bumpers and 1 by laser scan (kinect)
+# voxel map configuration; pan-voxels 0 are filled by bumpers and 1 by laser scan (kinect)
 
 map_type: costmap
 transform_tolerance: 5 # seconds

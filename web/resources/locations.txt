@@ -1,0 +1,4 @@
+Robotics Lab
+Computer Cluster 2
+Lift
+Vending Machines

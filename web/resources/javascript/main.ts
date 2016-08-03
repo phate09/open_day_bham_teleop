@@ -1,288 +1,377 @@
-
 /// <reference path="typings/index.d.ts" />
-declare var ROS2D:any;
-declare var NAV2D:any;
-var serverAddress = "86.31.216.84";
+///<reference path="flipclock.d.ts"/>
+///<reference path="ptuStateListener.d.ts"/>
+declare var ROS2D: any;
+declare var NAV2D: any;
 // var src = "http://" + serverAddress + ":8080/stream?topic=/head_xtion/rgb/image_mono";
-
+var ptuController: PTUcontroller;
+var mapNavigator: Navigator2d;
+var ticketer: Ticketer;
+//noinspection JSUnusedGlobalSymbols
 function init() {
     "use strict";
     $(".instruction_text").hide();
-    initNavigator(false);
-    initPTUControl();
-    initClock();
+
+    var serverAddress = "86.31.216.84";
+    mapNavigator = new Navigator2d(serverAddress, "9090", "nav");
+    ptuController = new PTUcontroller(serverAddress, "9090");
+    ticketer = new Ticketer();
+    ticketer.startControlExternalMethod = ()=> {
+        startControlSession();
+    };
+    ticketer.endControlExternalMethod = ()=> {
+        endControlSession();
+    };
     loop();
+}
+function requestTicket() {
+    ticketer.requestTicket();
 }
 
 function loop() {
     "use strict";
-    checkQueue();
-    renewTicket();
+    ticketer.checkQueue();
+    ticketer.renewTicket();
     setTimeout(loop, 1000);
 }
-var ptuGoal, ptuStateListener, rosPTU;
-function initPTUControl() {
-    "use strict";
-    rosPTU = new ROSLIB.Ros({
-        url: "ws://" + serverAddress + ":9090"
-    });
-    // handle the key
-    var body = document.getElementsByTagName("body")[0];
-    ptuGoal = new ROSLIB.Topic({
-        ros: rosPTU, name: "/SetPTUState/goal", messageType: "scitos_ptu/PtuGotoActionGoal"
-    });
-    ptuStateListener = new ROSLIB.Topic({
-        ros: rosPTU, name: "/SetPTUState/result", messageType: "scitos_ptu/PtuGotoActionResult"
-    });
-    ptuStateListener.subscribe(function (message) {
-        current_pan = message.result.state.position[0];
-        current_tilt = message.result.state.position[1];
-    });
-    //limit the amount of times keydown event is called to 1 every 200 millisecs
-    body.addEventListener("keydown", _.throttle(function (e) {
-        handleKey(e.keyCode, true);
-    }, 200, {
-        leading: false, trailing: false
-    }), false);
-}
-var tilt = 0;
-var pan = 0;
-var current_pan = 0, current_tilt = 0;
-// sets up a key listener on the page used for keyboard teleoperation
-var handleKey = function (keyCode, keyDown) {
-    var pub = true;
-    // check which key was pressed
-    switch (keyCode) {
-    case 37:
-        // turn left
-        pan = current_pan + 5;
-        break;
-    case 38:
-        // up
-        tilt = current_tilt - 5;
-        break;
-    case 39:
-        // turn right
-        pan = current_pan - 5;
-        break;
-    case 40:
-        // down
-        tilt = current_tilt + 5;
-        break;
-    case 32:
-        //spacebar
-        pan = 0;
-        tilt = 0;
-        break;
-    default:
-        pub = false;
+class PTUcontroller {
+    private ptuGoal: ROSLIB.Topic;
+    private ptuStateListener: ROSLIB.Topic;
+    private rosConnection: ROSLIB.Ros;
+    private allowPublish = false;
+    private current_pan = 0;
+    private current_tilt = 0;
+
+    constructor(url: string, port: string) {
+        this.rosConnection = new ROSLIB.Ros({
+            url: "ws://" + url + ":" + port
+        });
+        this.ptuGoal = new ROSLIB.Topic({
+            ros: this.rosConnection, name: "/SetPTUState/goal", messageType: "scitos_ptu/PtuGotoActionGoal"
+        });
+        this.ptuStateListener = new ROSLIB.Topic({
+            ros: this.rosConnection, name: "/SetPTUState/result", messageType: "scitos_ptu/PtuGotoActionResult"
+        });
+        this.assignHandler();
     }
 
-    // publish the command
-    if (pub === true) {
-        var twist = new ROSLIB.Message({
-            header: {
-                seq: 1, stamp: new Date().getTime(), frame_id: ""
-            }, goal_id: {
-                stamp: new Date().getTime(), id: "",
-            }, goal: {
-                pan: pan, tilt: tilt, pan_vel: 10.0, tilt_vel: 10.0
-            }
-        });
-        if (ros) {
+    private startPublish(): void {
+        this.ptuGoal.advertise();
+        this.allowPublish = true;
+    }
 
-            ptuGoal.publish(twist);
+    private startListen(): void {
+        this.ptuStateListener.subscribe(function (message: ptuGotoActionResultMsg) {
+            this.current_pan = message.result.state.position[0];
+            this.current_tilt = message.result.state.position[1];
+        });
+    }
+
+    private stopPublish(): void {
+        this.ptuGoal.unadvertise();
+        this.allowPublish = false;
+    }
+
+    private stopListen(): void {
+        this.ptuStateListener.unsubscribe();
+    }
+
+    public startControl(): void {
+        this.startListen();
+        this.startPublish();
+    }
+
+    public stopControl(): void {
+        this.stopListen();
+        this.stopPublish();
+    }
+
+    private assignHandler() {
+        // handle the key
+        var body = document.getElementsByTagName("body")[0];
+        //limit the amount of times keydown event is called to 1 every 200 millisecs
+        body.addEventListener("keydown", _.throttle(function (e) {
+            this.keyDownHandler(e.keyCode);
+        }, 200, {
+            leading: false, trailing: false
+        }), false);
+    }
+
+    private keyDownHandler(keyCode): void {
+        if (!this.allowPublish)
+            return;
+        var pub = true;
+        var tilt = 0;
+        var pan = 0;
+        // check which key was pressed
+        switch (keyCode) {
+            case 37:
+                // turn left
+                pan = this.current_pan + 5;
+                break;
+            case 38:
+                // up
+                tilt = this.current_tilt - 5;
+                break;
+            case 39:
+                // turn right
+                pan = this.current_pan - 5;
+                break;
+            case 40:
+                // down
+                tilt = this.current_tilt + 5;
+                break;
+            case 32:
+                //spacebar
+                pan = 0;
+                tilt = 0;
+                break;
+            default:
+                pub = false;
+        }
+        if (pub) {
+            //prepare the message to be sent
+            var twist = new ROSLIB.Message({
+                header: {
+                    seq: 1, stamp: new Date().getTime(), frame_id: ""
+                }, goal_id: {
+                    stamp: new Date().getTime(), id: "",
+                }, goal: {
+                    pan: pan, tilt: tilt, pan_vel: 10.0, tilt_vel: 10.0
+                }
+            });
+            this.ptuGoal.publish(twist);
         }
     }
-};
-
-
-var clock;
-function initClock() {
-    var countdown:any = $(".countdown-clock");
-    if (countdown.length) {//if clock exists
-        clock = countdown.FlipClock({
-            autoStart: true, countdown: true, clockFace: "MinuteCounter"
+}
+class Navigator2d {
+    private ros: ROSLIB.Ros;
+    private viewer: any = null;
+    private width = 318;//640
+    private height = 562;//1131
+    constructor(url: string, port: string, private navId: string) {
+        this.ros = new ROSLIB.Ros({
+            url: "ws://" + url + ":" + port
         });
-        clock.setTime(0);
-        clock.start();
-        $("#clockContainer").text("<h1 class=\"ui center aligned header\"> <div class=\"sub header\">Time to the next person</div> </h1>");
+    }
+
+    private initMap() {
+        // Create the main viewer.
+        this.viewer = new ROS2D.Viewer({
+            divID: this.navId, width: this.width,
+            height: this.height
+        });
+        NAV2D.OccupancyGridClientNav({
+            ros: this.ros,
+            rootObject: this.viewer.scene,
+            viewer: this.viewer,
+            serverName: "/move_base",
+            withOrientation: true
+        });
+    }
+
+    public showMap() {
+        if (this.viewer == null)
+            this.initMap();
+        $(".instruction_text").show();
+        $("#traffic_light").attr("src", "images/remote_go.png");
+    }
+
+    public removeMap() {
+        var nav = $("#" + this.navId);
+        this.viewer = null;
+        nav.empty();
+        $(".instruction_text").hide();
+        $("#traffic_light").attr("src", "images/remote_time.png");
     }
 }
-var ros;
-function initNavigator(flag: boolean) {
-    var viewer;
-    var nav = $("#nav");
-    if (nav.length) {//if nav exists
-        if (flag) {
-            if (ros == null) {
-                // Connect to ROS.
-                ros = new ROSLIB.Ros({
-                    url: "ws://" + serverAddress + ":9090"
-                });
+class Ticketer {
+    private currentTicketId = -1;
+    private checkQueueHttpRequest = Ticketer.createXmlHttpRequestObject();
+    private requestTicketHttpRequest = Ticketer.createXmlHttpRequestObject();
+    private renewTicketHttpRequest = Ticketer.createXmlHttpRequestObject();
+    private flipClock: IFlipClock;
+    public startControlExternalMethod = ()=> {
+    };
+    public endControlExternalMethod = ()=> {
+    };
 
-                // Create the main viewer.
-                viewer = new ROS2D.Viewer({
-                    divID: "nav", width: 318,//640,
-                    height: 562//1131
-                });
-                // Setup the nav client.
-                NAV2D.OccupancyGridClientNav({
-                    ros: ros, rootObject: viewer.scene, viewer: viewer, serverName: "/move_base", withOrientation: true
-                });
-                $(".instruction_text").show();
-                $("#traffic_light").attr("src", "images/remote_go.png");
-            }
+    constructor() {
+        this.flipClock = Ticketer.initClock();
+    }
+
+    private static initClock(): IFlipClock {
+        var clock: IFlipClock = null;
+        var countdown = $("#flipClock");
+        if (countdown.length) {//if clock exists
+            clock = countdown.FlipClock({
+                autoStart: true, countdown: true, clockFace: "MinuteCounter"
+            });
+            clock.setTime(0);
+            clock.start();
+        }
+        return clock;
+    }
+
+    public checkQueue(): void {
+        "use strict";
+        //proceed only if the checkQueueHttpRequest object isn't busy
+        if (this.checkQueueHttpRequest.readyState === 4 || this.checkQueueHttpRequest.readyState === 0) {
+            this.checkQueueHttpRequest.open("GET", "resources/php/checkQueue.php", true);
+            this.checkQueueHttpRequest.onreadystatechange = this.checkQueueResponse;
+            this.checkQueueHttpRequest.send(null);
         }
         else {
-            nav.empty();
-            $(".instruction_text").hide();
-            $("#traffic_light").attr("src", "images/remote_time.png");
-            ros = null;
+            // if the connection is busy, try again after one second
+            setTimeout(this.checkQueue, 1000);
         }
     }
-}
-function createXmlHttpRequestObject() {
-    "use strict";
-    var xmlHttp;
-    try {
-        xmlHttp = new XMLHttpRequest();
-    }
-    catch (e) {
-        xmlHttp = false;
-    }
-    if (!xmlHttp) {
-        alert("Error creating the XMLHttpRequest object.");
-    }
-    else {
-        return xmlHttp;
-    }
-}
-var currentTicketId = -1;
-var checkQueueHttpRequest = createXmlHttpRequestObject();//this object will be used in order to make ajax calls to checkQueue
-var requestTicketHttpRequest = createXmlHttpRequestObject();//this object will be used in order to make ajax calls to checkQueue
-var renewTicketHttpRequest = createXmlHttpRequestObject();//this object will be used in order to make ajax calls to checkQueue
-// var startControlHttpRequest = createXmlHttpRequestObject();//this object will be used in order to make ajax calls to checkQueue
 
-function checkQueue() {
-    "use strict";
-    //proceed only if the checkQueueHttpRequest object isn't busy
-    if (checkQueueHttpRequest.readyState === 4 || checkQueueHttpRequest.readyState === 0) {
-        checkQueueHttpRequest.open("GET", "resources/php/checkQueue.php", true);
-        checkQueueHttpRequest.onreadystatechange = checkQueueResponse;
-        checkQueueHttpRequest.send(null);
-    }
-    else {
-        // if the connection is busy, try again after one second
-        setTimeout(checkQueue, 1000);
-    }
-}
-function checkQueueResponse() {
-    "use strict";
-    if (checkQueueHttpRequest.readyState === 4) {
-        //status of 200 indicates the transaction completed succesfully
-        if (checkQueueHttpRequest.status === 200) {
-            var responseJSON, queueSize, queueMsg;
-            //extract the xml
-            responseJSON = JSON.parse(checkQueueHttpRequest.responseText);
+    private checkQueueResponse() {
+        "use strict";
+        if (this.checkQueueHttpRequest.readyState === 4) {
+            //status of 200 indicates the transaction completed succesfully
+            if (this.checkQueueHttpRequest.status === 200) {
+                var responseJSON, queueSize, queueMsg;
+                //extract the xml
+                responseJSON = JSON.parse(this.checkQueueHttpRequest.responseText);
 
-            //update serving, clock and queue size
-            // serving = "Serving id " + responseJSON.servingId;
-            if (responseJSON.remainingSeconds > 0 && clock.time != responseJSON.remainingSeconds) {
-                clock.setTime(responseJSON.remainingSeconds);
-                clock.start();
-            }
-            queueSize = responseJSON.queueSize - 1;
-            if (queueSize < 0) {
-                queueSize = 0;
-            }
-            queueMsg = queueSize + " " + (queueSize == 1 ? "person" : "people") + " in queue";
-            var queueSizeElement = $("#queueSize");
-            if (queueSizeElement.text() != queueMsg) {
-                queueSizeElement.text(queueMsg);
-            }
-            if (currentTicketId != -1) {
-                if (parseInt(responseJSON.servingId) === currentTicketId) {
-                    startControlSession();
+                //update serving, clock and queue size
+                // serving = "Serving id " + responseJSON.servingId;
+                if (responseJSON.remainingSeconds > 0 && this.flipClock.time != responseJSON.remainingSeconds) {
+                    this.flipClock.setTime(responseJSON.remainingSeconds);
+                    this.flipClock.start();
+                }
+                queueSize = responseJSON.queueSize - 1;
+                if (queueSize < 0) {
+                    queueSize = 0;
+                }
+                queueMsg = queueSize + " " + (queueSize == 1 ? "person" : "people") + " in queue";
+                var queueSizeElement = $("#queueSizeMsg");
+                if (queueSizeElement.text() != queueMsg) {
+                    queueSizeElement.text(queueMsg);
+                }
+                if (this.currentTicketId != -1) {
+                    if (parseInt(responseJSON.servingId) === this.currentTicketId) {
+                        this.startControl();
+                    }
                 }
             }
         }
     }
-}
 
-function requestTicket() {
-    "use strict";
-    //hide the ticket button
-    $("#getTicket").hide();
-    //proceed only if the checkQueueHttpRequest object isn't busy
-    if (requestTicketHttpRequest.readyState === 4 || requestTicketHttpRequest.readyState === 0) {
-        var loc = window.location.pathname;
-        requestTicketHttpRequest.open("GET", "resources/php/requestTicket.php", true);
-        requestTicketHttpRequest.onreadystatechange = requestTicketResponse;
-        requestTicketHttpRequest.send(null);
+    private startControl() {
+        if (this.startControlExternalMethod != null)
+            this.startControlExternalMethod();
+        this.flipClock.stop = this.endControl();
     }
-    else {
-        // if the connection is busy, try again after one second
-        setTimeout(requestTicket, 1000);
-    }
-}
-function requestTicketResponse() {
-    "use strict";
-    if (requestTicketHttpRequest.readyState === 4) {
-        //status of 200 indicates the transaction completed succesfully
-        if (requestTicketHttpRequest.status === 200) {
-            var responseJSON;
-            responseJSON = JSON.parse(requestTicketHttpRequest.responseText);
-            currentTicketId = parseInt(responseJSON.ticketId);
-            $("#yourNumber").text("You are the number " + currentTicketId);
-            checkQueue();
-        }
-        else {
-            alert("There was a problem accessing the server(request): " + requestTicketHttpRequest.statusText);
-        }
-    }
-}
-//keeps the current ticket active (in order to remove the user from the queue if it leaves the page)
-function renewTicket() {
-    "use strict";
-    if (currentTicketId != -1) {
-        //proceed only if the checkQueueHttpRequest object isn't busy
-        if (renewTicketHttpRequest.readyState === 4 || renewTicketHttpRequest.readyState === 0) {
-            renewTicketHttpRequest.open("GET", "resources/php/renewTicket.php?id=" + currentTicketId, true);
-            renewTicketHttpRequest.onreadystatechange = renewTicketResponse;
-            renewTicketHttpRequest.send(null);
-        }
-        else {
-            // if the connection is busy, try again after one second
-            setTimeout(renewTicket, 1000);
-        }
-    }
-}
-function renewTicketResponse() {
-    "use strict";
-    if (renewTicketHttpRequest.readyState === 4) {
-        //status of 200 indicates the transaction completed succesfully
-        if (renewTicketHttpRequest.status === 200) {
-            var responseJSON;
-            responseJSON = JSON.parse(renewTicketHttpRequest.responseText);
-            if (!responseJSON) {
-                alert("error");
-                //setTimeout(renewTicket, 1000);//renew again after a second
-            }
-        }
-        else {
-            //alert("There was a problem accessing the server(renew): " + renewTicketHttpRequest.statusText);
-        }
-    }
-}
-function startControlSession() {
-    "use strict";
-    if (ros == null) {
-        clock.stop = function () {
-            initNavigator(false);
-            clock.stop = null;
+
+    private endControl() {
+        return ()=> {
+            this.flipClock.stop = null;
+            if (this.endControlExternalMethod != null)
+                this.endControlExternalMethod();
 
         };
     }
-    initNavigator(true);
+
+    //noinspection JSUnusedGlobalSymbols
+    public requestTicket() {
+        "use strict";
+        //hide the ticket button
+        $("#getTicket").hide();
+        //proceed only if the checkQueueHttpRequest object isn't busy
+        if (this.requestTicketHttpRequest.readyState === 4 || this.requestTicketHttpRequest.readyState === 0) {
+            this.requestTicketHttpRequest.open("GET", "resources/php/requestTicket.php", true);
+            this.requestTicketHttpRequest.onreadystatechange = this.requestTicketResponse;
+            this.requestTicketHttpRequest.send(null);
+        }
+        else {
+            // if the connection is busy, try again after one second
+            setTimeout(this.requestTicket, 1000);
+        }
+    }
+
+    private requestTicketResponse() {
+        "use strict";
+        if (this.requestTicketHttpRequest.readyState === 4) {
+            //status of 200 indicates the transaction completed succesfully
+            if (this.requestTicketHttpRequest.status === 200) {
+                var responseJSON;
+                responseJSON = JSON.parse(this.requestTicketHttpRequest.responseText);
+                this.currentTicketId = parseInt(responseJSON.ticketId);
+                $("#yourNumberMsg").text("You are the number " + this.currentTicketId);
+                this.checkQueue();
+            }
+            else {
+                alert("There was a problem accessing the server(request): " + this.requestTicketHttpRequest.statusText);
+            }
+        }
+    }
+
+    //keeps the current ticket active (in order to remove the user from the queue if it leaves the page)
+    public renewTicket() {
+        "use strict";
+        if (this.currentTicketId != -1) {
+            //proceed only if the checkQueueHttpRequest object isn't busy
+            if (this.renewTicketHttpRequest.readyState === 4 || this.renewTicketHttpRequest.readyState === 0) {
+                this.renewTicketHttpRequest.open("GET", "resources/php/renewTicket.php?id=" + this.currentTicketId, true);
+                this.renewTicketHttpRequest.onreadystatechange = this.renewTicketResponse;
+                this.renewTicketHttpRequest.send(null);
+            }
+            else {
+                // if the connection is busy, try again after one second
+                setTimeout(this.renewTicket, 1000);
+            }
+        }
+    }
+
+    private renewTicketResponse() {
+        "use strict";
+        if (this.renewTicketHttpRequest.readyState === 4) {
+            //status of 200 indicates the transaction completed succesfully
+            if (this.renewTicketHttpRequest.status === 200) {
+                var responseJSON;
+                responseJSON = JSON.parse(this.renewTicketHttpRequest.responseText);
+                if (!responseJSON) {
+                    alert("error");
+                    //setTimeout(renewTicket, 1000);//renew again after a second
+                }
+            }
+            else {
+                //alert("There was a problem accessing the server(renew): " + renewTicketHttpRequest.statusText);
+            }
+        }
+    }
+
+    private static createXmlHttpRequestObject(): XMLHttpRequest {
+        "use strict";
+        var xmlHttp: XMLHttpRequest;
+        try {
+            xmlHttp = new XMLHttpRequest();
+        }
+        catch (e) {
+            xmlHttp = null;
+        }
+        if (xmlHttp == null) {
+            alert("Error creating the XMLHttpRequest object.");
+        }
+        else {
+            return xmlHttp;
+        }
+    }
+}
+
+
+function startControlSession(): void {
+    "use strict";
+    mapNavigator.showMap();
+    ptuController.startControl();
+    $(".instruction_text").show();
+}
+function endControlSession(): void {
+    "use strict";
+    mapNavigator.removeMap();
+    ptuController.stopControl();
+    $(".instruction_text").hide();
 }

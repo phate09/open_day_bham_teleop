@@ -1,273 +1,344 @@
 /// <reference path="typings/index.d.ts" />
-var serverAddress = "86.31.216.84";
+///<reference path="flipclock.d.ts"/>
+///<reference path="ptuStateListener.d.ts"/>
 // var src = "http://" + serverAddress + ":8080/stream?topic=/head_xtion/rgb/image_mono";
+var ptuController;
+var mapNavigator;
+var ticketer;
+//noinspection JSUnusedGlobalSymbols
 function init() {
     "use strict";
     $(".instruction_text").hide();
-    initNavigator(false);
-    initPTUControl();
-    initClock();
+    var serverAddress = "86.31.216.84";
+    mapNavigator = new Navigator2d(serverAddress, "9090", "nav");
+    ptuController = new PTUcontroller(serverAddress, "9090");
+    ticketer = new Ticketer();
+    ticketer.startControlExternalMethod = function () {
+        startControlSession();
+    };
+    ticketer.endControlExternalMethod = function () {
+        endControlSession();
+    };
     loop();
+}
+function requestTicket() {
+    ticketer.requestTicket();
 }
 function loop() {
     "use strict";
-    checkQueue();
-    renewTicket();
+    ticketer.checkQueue();
+    ticketer.renewTicket();
     setTimeout(loop, 1000);
 }
-var ptuGoal, ptuStateListener, rosPTU;
-function initPTUControl() {
-    "use strict";
-    rosPTU = new ROSLIB.Ros({
-        url: "ws://" + serverAddress + ":9090"
-    });
-    // handle the key
-    var body = document.getElementsByTagName("body")[0];
-    ptuGoal = new ROSLIB.Topic({
-        ros: rosPTU, name: "/SetPTUState/goal", messageType: "scitos_ptu/PtuGotoActionGoal"
-    });
-    ptuStateListener = new ROSLIB.Topic({
-        ros: rosPTU, name: "/SetPTUState/result", messageType: "scitos_ptu/PtuGotoActionResult"
-    });
-    ptuStateListener.subscribe(function (message) {
-        current_pan = message.result.state.position[0];
-        current_tilt = message.result.state.position[1];
-    });
-    //limit the amount of times keydown event is called to 1 every 200 millisecs
-    body.addEventListener("keydown", _.throttle(function (e) {
-        handleKey(e.keyCode, true);
-    }, 200, {
-        leading: false, trailing: false
-    }), false);
-}
-var tilt = 0;
-var pan = 0;
-var current_pan = 0, current_tilt = 0;
-// sets up a key listener on the page used for keyboard teleoperation
-var handleKey = function (keyCode, keyDown) {
-    var pub = true;
-    // check which key was pressed
-    switch (keyCode) {
-        case 37:
-            // turn left
-            pan = current_pan + 5;
-            break;
-        case 38:
-            // up
-            tilt = current_tilt - 5;
-            break;
-        case 39:
-            // turn right
-            pan = current_pan - 5;
-            break;
-        case 40:
-            // down
-            tilt = current_tilt + 5;
-            break;
-        case 32:
-            //spacebar
-            pan = 0;
-            tilt = 0;
-            break;
-        default:
-            pub = false;
-    }
-    // publish the command
-    if (pub === true) {
-        var twist = new ROSLIB.Message({
-            header: {
-                seq: 1, stamp: new Date().getTime(), frame_id: ""
-            }, goal_id: {
-                stamp: new Date().getTime(), id: ""
-            }, goal: {
-                pan: pan, tilt: tilt, pan_vel: 10.0, tilt_vel: 10.0
-            }
+var PTUcontroller = (function () {
+    function PTUcontroller(url, port) {
+        this.allowPublish = false;
+        this.current_pan = 0;
+        this.current_tilt = 0;
+        this.rosConnection = new ROSLIB.Ros({
+            url: "ws://" + url + ":" + port
         });
-        if (ros) {
-            ptuGoal.publish(twist);
-        }
-    }
-};
-var clock;
-function initClock() {
-    var countdown = $(".countdown-clock");
-    if (countdown.length) {
-        clock = countdown.FlipClock({
-            autoStart: true, countdown: true, clockFace: "MinuteCounter"
+        this.ptuGoal = new ROSLIB.Topic({
+            ros: this.rosConnection, name: "/SetPTUState/goal", messageType: "scitos_ptu/PtuGotoActionGoal"
         });
-        clock.setTime(0);
-        clock.start();
-        $("#clockContainer").text("<h1 class=\"ui center aligned header\"> <div class=\"sub header\">Time to the next person</div> </h1>");
+        this.ptuStateListener = new ROSLIB.Topic({
+            ros: this.rosConnection, name: "/SetPTUState/result", messageType: "scitos_ptu/PtuGotoActionResult"
+        });
+        this.assignHandler();
     }
-}
-var ros;
-function initNavigator(flag) {
-    var viewer;
-    var nav = $("#nav");
-    if (nav.length) {
-        if (flag) {
-            if (ros == null) {
-                // Connect to ROS.
-                ros = new ROSLIB.Ros({
-                    url: "ws://" + serverAddress + ":9090"
-                });
-                // Create the main viewer.
-                viewer = new ROS2D.Viewer({
-                    divID: "nav", width: 318,
-                    height: 562 //1131
-                });
-                // Setup the nav client.
-                NAV2D.OccupancyGridClientNav({
-                    ros: ros, rootObject: viewer.scene, viewer: viewer, serverName: "/move_base", withOrientation: true
-                });
-                $(".instruction_text").show();
-                $("#traffic_light").attr("src", "images/remote_go.png");
-            }
+    PTUcontroller.prototype.startPublish = function () {
+        this.ptuGoal.advertise();
+        this.allowPublish = true;
+    };
+    PTUcontroller.prototype.startListen = function () {
+        this.ptuStateListener.subscribe(function (message) {
+            this.current_pan = message.result.state.position[0];
+            this.current_tilt = message.result.state.position[1];
+        });
+    };
+    PTUcontroller.prototype.stopPublish = function () {
+        this.ptuGoal.unadvertise();
+        this.allowPublish = false;
+    };
+    PTUcontroller.prototype.stopListen = function () {
+        this.ptuStateListener.unsubscribe();
+    };
+    PTUcontroller.prototype.startControl = function () {
+        this.startListen();
+        this.startPublish();
+    };
+    PTUcontroller.prototype.stopControl = function () {
+        this.stopListen();
+        this.stopPublish();
+    };
+    PTUcontroller.prototype.assignHandler = function () {
+        // handle the key
+        var body = document.getElementsByTagName("body")[0];
+        //limit the amount of times keydown event is called to 1 every 200 millisecs
+        body.addEventListener("keydown", _.throttle(function (e) {
+            this.keyDownHandler(e.keyCode);
+        }, 200, {
+            leading: false, trailing: false
+        }), false);
+    };
+    PTUcontroller.prototype.keyDownHandler = function (keyCode) {
+        if (!this.allowPublish)
+            return;
+        var pub = true;
+        var tilt = 0;
+        var pan = 0;
+        // check which key was pressed
+        switch (keyCode) {
+            case 37:
+                // turn left
+                pan = this.current_pan + 5;
+                break;
+            case 38:
+                // up
+                tilt = this.current_tilt - 5;
+                break;
+            case 39:
+                // turn right
+                pan = this.current_pan - 5;
+                break;
+            case 40:
+                // down
+                tilt = this.current_tilt + 5;
+                break;
+            case 32:
+                //spacebar
+                pan = 0;
+                tilt = 0;
+                break;
+            default:
+                pub = false;
         }
-        else {
-            nav.empty();
-            $(".instruction_text").hide();
-            $("#traffic_light").attr("src", "images/remote_time.png");
-            ros = null;
-        }
-    }
-}
-function createXmlHttpRequestObject() {
-    "use strict";
-    var xmlHttp;
-    try {
-        xmlHttp = new XMLHttpRequest();
-    }
-    catch (e) {
-        xmlHttp = false;
-    }
-    if (!xmlHttp) {
-        alert("Error creating the XMLHttpRequest object.");
-    }
-    else {
-        return xmlHttp;
-    }
-}
-var currentTicketId = -1;
-var checkQueueHttpRequest = createXmlHttpRequestObject(); //this object will be used in order to make ajax calls to checkQueue
-var requestTicketHttpRequest = createXmlHttpRequestObject(); //this object will be used in order to make ajax calls to checkQueue
-var renewTicketHttpRequest = createXmlHttpRequestObject(); //this object will be used in order to make ajax calls to checkQueue
-// var startControlHttpRequest = createXmlHttpRequestObject();//this object will be used in order to make ajax calls to checkQueue
-function checkQueue() {
-    "use strict";
-    //proceed only if the checkQueueHttpRequest object isn't busy
-    if (checkQueueHttpRequest.readyState === 4 || checkQueueHttpRequest.readyState === 0) {
-        checkQueueHttpRequest.open("GET", "resources/php/checkQueue.php", true);
-        checkQueueHttpRequest.onreadystatechange = checkQueueResponse;
-        checkQueueHttpRequest.send(null);
-    }
-    else {
-        // if the connection is busy, try again after one second
-        setTimeout(checkQueue, 1000);
-    }
-}
-function checkQueueResponse() {
-    "use strict";
-    if (checkQueueHttpRequest.readyState === 4) {
-        //status of 200 indicates the transaction completed succesfully
-        if (checkQueueHttpRequest.status === 200) {
-            var responseJSON, queueSize, queueMsg;
-            //extract the xml
-            responseJSON = JSON.parse(checkQueueHttpRequest.responseText);
-            //update serving, clock and queue size
-            // serving = "Serving id " + responseJSON.servingId;
-            if (responseJSON.remainingSeconds > 0 && clock.time != responseJSON.remainingSeconds) {
-                clock.setTime(responseJSON.remainingSeconds);
-                clock.start();
-            }
-            queueSize = responseJSON.queueSize - 1;
-            if (queueSize < 0) {
-                queueSize = 0;
-            }
-            queueMsg = queueSize + " " + (queueSize == 1 ? "person" : "people") + " in queue";
-            var queueSizeElement = $("#queueSize");
-            if (queueSizeElement.text() != queueMsg) {
-                queueSizeElement.text(queueMsg);
-            }
-            if (currentTicketId != -1) {
-                if (parseInt(responseJSON.servingId) === currentTicketId) {
-                    startControlSession();
+        if (pub) {
+            //prepare the message to be sent
+            var twist = new ROSLIB.Message({
+                header: {
+                    seq: 1, stamp: new Date().getTime(), frame_id: ""
+                }, goal_id: {
+                    stamp: new Date().getTime(), id: ""
+                }, goal: {
+                    pan: pan, tilt: tilt, pan_vel: 10.0, tilt_vel: 10.0
                 }
-            }
+            });
+            this.ptuGoal.publish(twist);
         }
+    };
+    return PTUcontroller;
+}());
+var Navigator2d = (function () {
+    function Navigator2d(url, port, navId) {
+        this.navId = navId;
+        this.viewer = null;
+        this.width = 318; //640
+        this.height = 562; //1131
+        this.ros = new ROSLIB.Ros({
+            url: "ws://" + url + ":" + port
+        });
     }
-}
-function requestTicket() {
-    "use strict";
-    //hide the ticket button
-    $("#getTicket").hide();
-    //proceed only if the checkQueueHttpRequest object isn't busy
-    if (requestTicketHttpRequest.readyState === 4 || requestTicketHttpRequest.readyState === 0) {
-        var loc = window.location.pathname;
-        requestTicketHttpRequest.open("GET", "resources/php/requestTicket.php", true);
-        requestTicketHttpRequest.onreadystatechange = requestTicketResponse;
-        requestTicketHttpRequest.send(null);
+    Navigator2d.prototype.initMap = function () {
+        // Create the main viewer.
+        this.viewer = new ROS2D.Viewer({
+            divID: this.navId, width: this.width,
+            height: this.height
+        });
+        NAV2D.OccupancyGridClientNav({
+            ros: this.ros,
+            rootObject: this.viewer.scene,
+            viewer: this.viewer,
+            serverName: "/move_base",
+            withOrientation: true
+        });
+    };
+    Navigator2d.prototype.showMap = function () {
+        if (this.viewer == null)
+            this.initMap();
+        $(".instruction_text").show();
+        $("#traffic_light").attr("src", "images/remote_go.png");
+    };
+    Navigator2d.prototype.removeMap = function () {
+        var nav = $("#" + this.navId);
+        this.viewer = null;
+        nav.empty();
+        $(".instruction_text").hide();
+        $("#traffic_light").attr("src", "images/remote_time.png");
+    };
+    return Navigator2d;
+}());
+var Ticketer = (function () {
+    function Ticketer() {
+        this.currentTicketId = -1;
+        this.checkQueueHttpRequest = Ticketer.createXmlHttpRequestObject();
+        this.requestTicketHttpRequest = Ticketer.createXmlHttpRequestObject();
+        this.renewTicketHttpRequest = Ticketer.createXmlHttpRequestObject();
+        this.startControlExternalMethod = function () {
+        };
+        this.endControlExternalMethod = function () {
+        };
+        this.flipClock = Ticketer.initClock();
     }
-    else {
-        // if the connection is busy, try again after one second
-        setTimeout(requestTicket, 1000);
-    }
-}
-function requestTicketResponse() {
-    "use strict";
-    if (requestTicketHttpRequest.readyState === 4) {
-        //status of 200 indicates the transaction completed succesfully
-        if (requestTicketHttpRequest.status === 200) {
-            var responseJSON;
-            responseJSON = JSON.parse(requestTicketHttpRequest.responseText);
-            currentTicketId = parseInt(responseJSON.ticketId);
-            $("#yourNumber").text("You are the number " + currentTicketId);
-            checkQueue();
+    Ticketer.initClock = function () {
+        var clock = null;
+        var countdown = $("#flipClock");
+        if (countdown.length) {
+            clock = countdown.FlipClock({
+                autoStart: true, countdown: true, clockFace: "MinuteCounter"
+            });
+            clock.setTime(0);
+            clock.start();
         }
-        else {
-            alert("There was a problem accessing the server(request): " + requestTicketHttpRequest.statusText);
-        }
-    }
-}
-//keeps the current ticket active (in order to remove the user from the queue if it leaves the page)
-function renewTicket() {
-    "use strict";
-    if (currentTicketId != -1) {
+        return clock;
+    };
+    Ticketer.prototype.checkQueue = function () {
+        "use strict";
         //proceed only if the checkQueueHttpRequest object isn't busy
-        if (renewTicketHttpRequest.readyState === 4 || renewTicketHttpRequest.readyState === 0) {
-            renewTicketHttpRequest.open("GET", "resources/php/renewTicket.php?id=" + currentTicketId, true);
-            renewTicketHttpRequest.onreadystatechange = renewTicketResponse;
-            renewTicketHttpRequest.send(null);
+        if (this.checkQueueHttpRequest.readyState === 4 || this.checkQueueHttpRequest.readyState === 0) {
+            this.checkQueueHttpRequest.open("GET", "resources/php/checkQueue.php", true);
+            this.checkQueueHttpRequest.onreadystatechange = this.checkQueueResponse;
+            this.checkQueueHttpRequest.send(null);
         }
         else {
             // if the connection is busy, try again after one second
-            setTimeout(renewTicket, 1000);
+            setTimeout(this.checkQueue, 1000);
         }
-    }
-}
-function renewTicketResponse() {
-    "use strict";
-    if (renewTicketHttpRequest.readyState === 4) {
-        //status of 200 indicates the transaction completed succesfully
-        if (renewTicketHttpRequest.status === 200) {
-            var responseJSON;
-            responseJSON = JSON.parse(renewTicketHttpRequest.responseText);
-            if (!responseJSON) {
-                alert("error");
+    };
+    Ticketer.prototype.checkQueueResponse = function () {
+        "use strict";
+        if (this.checkQueueHttpRequest.readyState === 4) {
+            //status of 200 indicates the transaction completed succesfully
+            if (this.checkQueueHttpRequest.status === 200) {
+                var responseJSON, queueSize, queueMsg;
+                //extract the xml
+                responseJSON = JSON.parse(this.checkQueueHttpRequest.responseText);
+                //update serving, clock and queue size
+                // serving = "Serving id " + responseJSON.servingId;
+                if (responseJSON.remainingSeconds > 0 && this.flipClock.time != responseJSON.remainingSeconds) {
+                    this.flipClock.setTime(responseJSON.remainingSeconds);
+                    this.flipClock.start();
+                }
+                queueSize = responseJSON.queueSize - 1;
+                if (queueSize < 0) {
+                    queueSize = 0;
+                }
+                queueMsg = queueSize + " " + (queueSize == 1 ? "person" : "people") + " in queue";
+                var queueSizeElement = $("#queueSizeMsg");
+                if (queueSizeElement.text() != queueMsg) {
+                    queueSizeElement.text(queueMsg);
+                }
+                if (this.currentTicketId != -1) {
+                    if (parseInt(responseJSON.servingId) === this.currentTicketId) {
+                        this.startControl();
+                    }
+                }
             }
         }
-        else {
+    };
+    Ticketer.prototype.startControl = function () {
+        if (this.startControlExternalMethod != null)
+            this.startControlExternalMethod();
+        this.flipClock.stop = this.endControl();
+    };
+    Ticketer.prototype.endControl = function () {
+        var _this = this;
+        return function () {
+            _this.flipClock.stop = null;
+            if (_this.endControlExternalMethod != null)
+                _this.endControlExternalMethod();
+        };
+    };
+    //noinspection JSUnusedGlobalSymbols
+    Ticketer.prototype.requestTicket = function () {
+        "use strict";
+        //hide the ticket button
+        $("#getTicket").hide();
+        //proceed only if the checkQueueHttpRequest object isn't busy
+        if (this.requestTicketHttpRequest.readyState === 4 || this.requestTicketHttpRequest.readyState === 0) {
+            this.requestTicketHttpRequest.open("GET", "resources/php/requestTicket.php", true);
+            this.requestTicketHttpRequest.onreadystatechange = this.requestTicketResponse;
+            this.requestTicketHttpRequest.send(null);
         }
-    }
-}
+        else {
+            // if the connection is busy, try again after one second
+            setTimeout(this.requestTicket, 1000);
+        }
+    };
+    Ticketer.prototype.requestTicketResponse = function () {
+        "use strict";
+        if (this.requestTicketHttpRequest.readyState === 4) {
+            //status of 200 indicates the transaction completed succesfully
+            if (this.requestTicketHttpRequest.status === 200) {
+                var responseJSON;
+                responseJSON = JSON.parse(this.requestTicketHttpRequest.responseText);
+                this.currentTicketId = parseInt(responseJSON.ticketId);
+                $("#yourNumberMsg").text("You are the number " + this.currentTicketId);
+                this.checkQueue();
+            }
+            else {
+                alert("There was a problem accessing the server(request): " + this.requestTicketHttpRequest.statusText);
+            }
+        }
+    };
+    //keeps the current ticket active (in order to remove the user from the queue if it leaves the page)
+    Ticketer.prototype.renewTicket = function () {
+        "use strict";
+        if (this.currentTicketId != -1) {
+            //proceed only if the checkQueueHttpRequest object isn't busy
+            if (this.renewTicketHttpRequest.readyState === 4 || this.renewTicketHttpRequest.readyState === 0) {
+                this.renewTicketHttpRequest.open("GET", "resources/php/renewTicket.php?id=" + this.currentTicketId, true);
+                this.renewTicketHttpRequest.onreadystatechange = this.renewTicketResponse;
+                this.renewTicketHttpRequest.send(null);
+            }
+            else {
+                // if the connection is busy, try again after one second
+                setTimeout(this.renewTicket, 1000);
+            }
+        }
+    };
+    Ticketer.prototype.renewTicketResponse = function () {
+        "use strict";
+        if (this.renewTicketHttpRequest.readyState === 4) {
+            //status of 200 indicates the transaction completed succesfully
+            if (this.renewTicketHttpRequest.status === 200) {
+                var responseJSON;
+                responseJSON = JSON.parse(this.renewTicketHttpRequest.responseText);
+                if (!responseJSON) {
+                    alert("error");
+                }
+            }
+            else {
+            }
+        }
+    };
+    Ticketer.createXmlHttpRequestObject = function () {
+        "use strict";
+        var xmlHttp;
+        try {
+            xmlHttp = new XMLHttpRequest();
+        }
+        catch (e) {
+            xmlHttp = null;
+        }
+        if (xmlHttp == null) {
+            alert("Error creating the XMLHttpRequest object.");
+        }
+        else {
+            return xmlHttp;
+        }
+    };
+    return Ticketer;
+}());
 function startControlSession() {
     "use strict";
-    if (ros == null) {
-        clock.stop = function () {
-            initNavigator(false);
-            clock.stop = null;
-        };
-    }
-    initNavigator(true);
+    mapNavigator.showMap();
+    ptuController.startControl();
+    $(".instruction_text").show();
 }
-//# sourceMappingURL=main.js.map
+function endControlSession() {
+    "use strict";
+    mapNavigator.removeMap();
+    ptuController.stopControl();
+    $(".instruction_text").hide();
+}

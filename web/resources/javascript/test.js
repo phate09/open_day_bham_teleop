@@ -9,6 +9,6 @@ var Greeter = (function () {
         return "<h1>" + this.greeting + "</h1>";
     };
     return Greeter;
-})();
+}());
 var greeter = new Greeter("Hello, Alessandra!");
 document.body.innerHTML = greeter.greet();

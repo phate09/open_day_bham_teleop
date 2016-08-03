@@ -142,13 +142,17 @@ body {
     /*margin-top: 3px;*/
     /*margin-bottom: 3px;*/
 }
+#clockContainer> .subheader{
+    margin-top: 10px;
+    margin-bottom: 20px;
+}
 .subheader {
     line-height: 1.2em;
     font-size: 1.14rem;
     display: block;
     color: rgba(0, 0, 0, 0.6);
 }
-.countdown-clock{
+.flip-clock-wrapper{
     zoom: 0.66;
     -moz-transform: scale(0.66);
     margin-top: -20px;

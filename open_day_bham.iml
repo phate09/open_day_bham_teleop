@@ -5,17 +5,5 @@
     <content url="file://$MODULE_DIR$" />
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="jQuery-2.0.0" level="application" />
-    <orderEntry type="library" name="jQuery UI-1.10.2" level="application" />
-    <orderEntry type="library" name="backbone" level="application" />
-    <orderEntry type="library" name="easeljs" level="application" />
-    <orderEntry type="library" name="eventemitter2" level="application" />
-    <orderEntry type="library" name="keyboardteleop" level="application" />
-    <orderEntry type="library" name="mjpegcanvas" level="application" />
-    <orderEntry type="library" name="nav2d" level="application" />
-    <orderEntry type="library" name="ros2d" level="application" />
-    <orderEntry type="library" name="roslib" level="application" />
-    <orderEntry type="library" name="underscore" level="application" />
-    <orderEntry type="library" name="node_modules" level="application" />
   </component>
 </module>

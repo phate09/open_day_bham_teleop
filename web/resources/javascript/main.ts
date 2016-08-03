@@ -1,6 +1,10 @@
+
 /// <reference path="typings/index.d.ts" />
+declare var ROS2D:any;
+declare var NAV2D:any;
 var serverAddress = "86.31.216.84";
 // var src = "http://" + serverAddress + ":8080/stream?topic=/head_xtion/rgb/image_mono";
+
 function init() {
     "use strict";
     $(".instruction_text").hide();
@@ -9,6 +13,7 @@ function init() {
     initClock();
     loop();
 }
+
 function loop() {
     "use strict";
     checkQueue();
@@ -48,50 +53,54 @@ var handleKey = function (keyCode, keyDown) {
     var pub = true;
     // check which key was pressed
     switch (keyCode) {
-        case 37:
-            // turn left
-            pan = current_pan + 5;
-            break;
-        case 38:
-            // up
-            tilt = current_tilt - 5;
-            break;
-        case 39:
-            // turn right
-            pan = current_pan - 5;
-            break;
-        case 40:
-            // down
-            tilt = current_tilt + 5;
-            break;
-        case 32:
-            //spacebar
-            pan = 0;
-            tilt = 0;
-            break;
-        default:
-            pub = false;
+    case 37:
+        // turn left
+        pan = current_pan + 5;
+        break;
+    case 38:
+        // up
+        tilt = current_tilt - 5;
+        break;
+    case 39:
+        // turn right
+        pan = current_pan - 5;
+        break;
+    case 40:
+        // down
+        tilt = current_tilt + 5;
+        break;
+    case 32:
+        //spacebar
+        pan = 0;
+        tilt = 0;
+        break;
+    default:
+        pub = false;
     }
+
     // publish the command
     if (pub === true) {
         var twist = new ROSLIB.Message({
             header: {
                 seq: 1, stamp: new Date().getTime(), frame_id: ""
             }, goal_id: {
-                stamp: new Date().getTime(), id: ""
+                stamp: new Date().getTime(), id: "",
             }, goal: {
                 pan: pan, tilt: tilt, pan_vel: 10.0, tilt_vel: 10.0
             }
         });
         if (ros) {
+
             ptuGoal.publish(twist);
         }
     }
 };
+
+
 var clock;
 function initClock() {
-    var countdown = $(".countdown-clock");
-    if (countdown.length) {
+    var countdown:any = $(".countdown-clock");
+    if (countdown.length) {//if clock exists
         clock = countdown.FlipClock({
             autoStart: true, countdown: true, clockFace: "MinuteCounter"
         });
@@ -101,20 +110,21 @@ function initClock() {
     }
 }
 var ros;
-function initNavigator(flag) {
+function initNavigator(flag: boolean) {
     var viewer;
     var nav = $("#nav");
-    if (nav.length) {
+    if (nav.length) {//if nav exists
         if (flag) {
             if (ros == null) {
                 // Connect to ROS.
                 ros = new ROSLIB.Ros({
                     url: "ws://" + serverAddress + ":9090"
                 });
+
                 // Create the main viewer.
                 viewer = new ROS2D.Viewer({
-                    divID: "nav", width: 318,
-                    height: 562 //1131
+                    divID: "nav", width: 318,//640,
+                    height: 562//1131
                 });
                 // Setup the nav client.
                 NAV2D.OccupancyGridClientNav({
@@ -149,10 +159,11 @@ function createXmlHttpRequestObject() {
     }
 }
 var currentTicketId = -1;
-var checkQueueHttpRequest = createXmlHttpRequestObject(); //this object will be used in order to make ajax calls to checkQueue
-var requestTicketHttpRequest = createXmlHttpRequestObject(); //this object will be used in order to make ajax calls to checkQueue
-var renewTicketHttpRequest = createXmlHttpRequestObject(); //this object will be used in order to make ajax calls to checkQueue
+var checkQueueHttpRequest = createXmlHttpRequestObject();//this object will be used in order to make ajax calls to checkQueue
+var requestTicketHttpRequest = createXmlHttpRequestObject();//this object will be used in order to make ajax calls to checkQueue
+var renewTicketHttpRequest = createXmlHttpRequestObject();//this object will be used in order to make ajax calls to checkQueue
 // var startControlHttpRequest = createXmlHttpRequestObject();//this object will be used in order to make ajax calls to checkQueue
+
 function checkQueue() {
     "use strict";
     //proceed only if the checkQueueHttpRequest object isn't busy
@@ -174,6 +185,7 @@ function checkQueueResponse() {
             var responseJSON, queueSize, queueMsg;
             //extract the xml
             responseJSON = JSON.parse(checkQueueHttpRequest.responseText);
+
             //update serving, clock and queue size
             // serving = "Serving id " + responseJSON.servingId;
             if (responseJSON.remainingSeconds > 0 && clock.time != responseJSON.remainingSeconds) {
@@ -197,6 +209,7 @@ function checkQueueResponse() {
         }
     }
 }
+
 function requestTicket() {
     "use strict";
     //hide the ticket button
@@ -254,9 +267,11 @@ function renewTicketResponse() {
             responseJSON = JSON.parse(renewTicketHttpRequest.responseText);
             if (!responseJSON) {
                 alert("error");
+                //setTimeout(renewTicket, 1000);//renew again after a second
             }
         }
         else {
+            //alert("There was a problem accessing the server(renew): " + renewTicketHttpRequest.statusText);
         }
     }
 }
@@ -266,8 +281,8 @@ function startControlSession() {
         clock.stop = function () {
             initNavigator(false);
             clock.stop = null;
+
         };
     }
     initNavigator(true);
 }
-//# sourceMappingURL=main.js.map

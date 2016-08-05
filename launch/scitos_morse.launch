@@ -5,8 +5,11 @@
   <node pkg="rviz" type="rviz" name="rviz" args="-d $(find open_day_bham)/launch/include/rviz_config.rviz"/>
   <!--Load the rosbridge server to receive the commands from the web browser-->
   <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch" > 
-    <arg name="port" value="9090"/>
+    <arg name="port" value="8080"/>
+    <arg name="ssl" value="true"/>
   </include>
   <!--Load the video server to receive the streaming from the robot-->
-  <node name="web_video_server" pkg="web_video_server" type="web_video_server" args="-port 8080"/>
+  <node name="web_video_server" pkg="web_video_server" type="web_video_server">
+	<param name="port" value="8090"/>
+  </node>
 </launch>

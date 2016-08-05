@@ -36,8 +36,8 @@
         </div>
         <div class="row center">
             <?php //check if the stream is available
-            $serverName = "86.31.216.84";
-            $src = "http://" . $serverName . ":8080/stream?topic=/head_xtion/rgb/image_mono";
+            $serverName = "147.188.197.18";//"86.31.216.84";
+            $src = "http://" . $serverName . ":8090/stream?topic=/head_xtion/rgb/image_mono";
             $handle = fopen($src, "r");
             if ($handle == false) { //stream not available
                 $src = "images/stream-not-available.png";
@@ -55,7 +55,7 @@
                         <div class="subheader">Time to the next person</div>
                         <div id="flipClock" class="flip-clock-wrapper" style="width: 310px"></div>
                         <button id="getTicket" class="button" onclick="requestTicket()">Get a ticket</button>
-                        <div id="yourNumber"></div>
+                        <div id="yourNumberMsg"></div>
                         <div id="queueSize">0 people in queue</div>
                     </div>
                 </div>

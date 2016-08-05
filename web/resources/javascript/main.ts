@@ -11,11 +11,27 @@ var ticketer: Ticketer;
 function init() {
     "use strict";
     $(".instruction_text").hide();
-    var serverAddress = "86.31.216.84";
-    var port="9090";
+    var serverAddress = "147.188.197.18"//"86.31.216.84";
+    var port="8080";
+    var url = "ws://" + serverAddress + ":" + port;
     var rosConnection = new ROSLIB.Ros({
-        url: "ws://" + serverAddress + ":" + port
+        url: url
     });
+    // rosConnection.on('connection', function() {
+    //
+    //     alert("connected");
+    //
+    // });
+    // rosConnection.on('error', function(text) {
+    //
+    //     alert("error");
+    //
+    // });
+    // var ws=new WebSocket(url);
+    // ws.addEventListener("error",()=>alert("cannot connect"));
+    // ws.addEventListener("open",()=>alert("connected to the websocket"));
+    // ws.send("hello");
+    // rosConnection.connect(url);
     mapNavigator = new Navigator2d(rosConnection, "nav");
     ptuController = new PTUcontroller(rosConnection);
     ticketer = new Ticketer();
@@ -260,15 +276,17 @@ class Ticketer {
     //noinspection JSUnusedGlobalSymbols
     public requestTicket() {
         "use strict";
-        //hide the ticket button
-        $("#getTicket").hide();
         $.get("resources/php/requestTicket.php", (responseText)=> {
             "use strict";
+            //hide the ticket button
+            $("#getTicket").hide();
             var responseJSON;
             responseJSON = JSON.parse(responseText);
             this.currentTicketId = parseInt(responseJSON.ticketId);
             $("#yourNumberMsg").text("You are the number " + this.currentTicketId);
             this.checkQueue();
+        }).fail((text)=>{
+            alert("fail")
         });
     }
 
